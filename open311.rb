@@ -84,6 +84,40 @@ get '/dev/v2/services/*' do
     xml.send(:'service_definition') {
       xml.send(:'service_code', '001')
       xml.send(:'attributes') {
+        xml.send(:'attribute') {
+          xml.send(:'variable', 'false')  # true/false - is user input required
+          xml.send(:'code', 'A1')
+          xml.send(:'datatype', 'string') # string, number, datetime, text, singlevaluelist, multivaluelist
+          xml.send(:'required', 'false') # true/false - is value required to submit service request
+          xml.send(:'datatype_description', '')
+          xml.send(:'order', '2') # Any positive integer not used for other attributes in the same service_code
+          xml.send(:'description', '')
+          xml.send(:'values') {
+            xml.send(:'value') {
+              xml.send(:'key', '123') # The unique identifier associated with an option for singlevaluelist or multivaluelist. This is analogous to the value attribute in an html option tag.
+              xml.send(:'name', 'test') # The human readable title of an option for singlevaluelist or multivaluelist. This is analogous to the innerhtml text node of an html option tag.
+            }
+            xml.send(:'value') {
+              xml.send(:'key', '124')
+              xml.send(:'name', 'another test')
+            }
+          }
+        }
+        xml.send(:'attribute') {
+          xml.send(:'variable', 'false')  # true/false - is user input required
+          xml.send(:'code', 'A2')
+          xml.send(:'datatype', 'string') # string, number, datetime, text, singlevaluelist, multivaluelist
+          xml.send(:'required', 'false') # true/false - is value required to submit service request
+          xml.send(:'datatype_description', '')
+          xml.send(:'order', '1') # Any positive integer not used for other attributes in the same service_code
+          xml.send(:'description', '')
+          xml.send(:'values') {
+            xml.send(:'value') {
+              xml.send(:'key', '123') # The unique identifier associated with an option for singlevaluelist or multivaluelist. This is analogous to the value attribute in an html option tag.
+              xml.send(:'name', 'test') # The human readable title of an option for singlevaluelist or multivaluelist. This is analogous to the innerhtml text node of an html option tag.
+            }
+          }
+        }
       }
     }
   end

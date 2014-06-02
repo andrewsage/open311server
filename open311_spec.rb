@@ -121,5 +121,106 @@ describe 'The Open311 App' do
       expect(attributes_xml).not_to be_empty
     end
     
+    it "each attribute should contain the required fields" do
+      required_fields = %w(variable code datatype required datatype_description order description)
+      
+      get '/dev/v2/services/001.xml'
+      xml_doc  = Nokogiri::XML(last_response.body)
+      attributes_xml = xml_doc.xpath('service_definition/attributes')
+      
+      attributes_xml.xpath("//attribute").each do |attribute_xml|
+        required_fields.each do |field|
+          #puts "#{field} = #{service_xml.xpath(field).text}"
+          expect(attribute_xml.xpath(field)).not_to be_empty
+        end
+      end
+    end
+    
+    it "each attribute code should have a unique within the service" do
+      
+      codes_used = []
+      
+      get '/dev/v2/services/001.xml'
+      xml_doc  = Nokogiri::XML(last_response.body)
+      attributes_xml = xml_doc.xpath('service_definition/attributes')
+      
+      attributes_xml.xpath("//attribute").each do |attribute_xml|
+        code = attribute_xml.xpath('code').text
+        expect(code).not_to be_empty
+        expect(codes_used).not_to include(code)
+        codes_used << code
+      end
+    end
+    
+    it "each attribute require field should have a positive number unique within the service" do
+      
+      numbers_used = []
+      
+      get '/dev/v2/services/001.xml'
+      xml_doc  = Nokogiri::XML(last_response.body)
+      attributes_xml = xml_doc.xpath('service_definition/attributes')
+      
+      attributes_xml.xpath("//attribute").each do |attribute_xml|
+        order = attribute_xml.xpath('order').text
+        expect(order).not_to be_empty
+        expect(numbers_used).not_to include(order)
+        numbers_used << order
+      end
+    end
+    
+    describe "each attribute should have valid values for" do
+      it "variable" do
+        valid_values = %w(true false)
+      
+        get '/dev/v2/services/001.xml'
+        xml_doc  = Nokogiri::XML(last_response.body)
+        attributes_xml = xml_doc.xpath('service_definition/attributes')
+        
+        attributes_xml.xpath("//attribute").each do |attribute_xml|
+          expect(valid_values).to include(attribute_xml.xpath('variable').text)
+        end
+      end
+      
+      it "datatype" do
+        valid_values = %w(string number datetime text singlevaluelist multivaluelist)
+      
+        get '/dev/v2/services/001.xml'
+        xml_doc  = Nokogiri::XML(last_response.body)
+        attributes_xml = xml_doc.xpath('service_definition/attributes')
+        
+        attributes_xml.xpath("//attribute").each do |attribute_xml|
+          expect(valid_values).to include(attribute_xml.xpath('datatype').text)
+        end
+      end
+      
+      it "required" do
+        valid_values = %w(true false)
+      
+        get '/dev/v2/services/001.xml'
+        xml_doc  = Nokogiri::XML(last_response.body)
+        attributes_xml = xml_doc.xpath('service_definition/attributes')
+        
+        attributes_xml.xpath("//attribute").each do |attribute_xml|
+          expect(valid_values).to include(attribute_xml.xpath('required').text)
+        end
+      end
+    end
+    
+    it "each attribute's values should have unique keys" do
+      get '/dev/v2/services/001.xml'
+      xml_doc  = Nokogiri::XML(last_response.body)
+      attributes_xml = xml_doc.xpath('service_definition/attributes')
+      
+      attributes_xml.xpath("attribute").each do |attribute_xml|
+        keys_used = []
+        values_xml = attribute_xml.xpath('values')
+        values_xml.xpath("value").each do |value_xml|
+          key = value_xml.xpath('key').text
+          expect(keys_used).not_to include(key)
+          keys_used << key
+        end
+      end
+    end
+    
   end
 end
