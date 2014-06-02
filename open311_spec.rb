@@ -78,7 +78,7 @@ describe 'The Open311 App' do
   
   describe 'get service' do
     it "should be xml" do
-      get '/dev/v2/services/fred'
+      get '/dev/v2/services/001.xml'
       expect(last_response['Content-Type']).to start_with('text/xml')
     end
     
@@ -99,6 +99,27 @@ describe 'The Open311 App' do
       expect(last_response.status).to eq(404)
       expect(last_response.body).to eq('jurisdiction_id provided was not found')
     end
+    
+    it "should have a service_defintion tag as the root" do
+      get '/dev/v2/services/001.xml'
+      xml_doc  = Nokogiri::XML(last_response.body)
+      expect(xml_doc.xpath('service_definition')).not_to be_empty
+    end
+    
+    it "should have a service code that matches the requested service code" do  
+      service_code = '001'
+      get "/dev/v2/services/#{service_code}.xml"
+      xml_doc  = Nokogiri::XML(last_response.body)
+      service_xml = xml_doc.xpath('service_definition')
+      expect(service_xml.xpath('service_code').text).to eq(service_code)  
+    end
+    
+    it "should have an attributes node" do
+      get '/dev/v2/services/001.xml'
+      xml_doc  = Nokogiri::XML(last_response.body)
+      attributes_xml = xml_doc.xpath('service_definition/attributes')
+      expect(attributes_xml).not_to be_empty
+    end
+    
   end
-  
 end
