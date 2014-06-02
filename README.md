@@ -7,6 +7,8 @@ Sinantra based Open311 server being developed as part of Code for Europe project
 Status
 ======
 
+[![Build Status](https://travis-ci.org/andrewsage/open311server.svg?branch=master)](https://travis-ci.org/andrewsage/open311server)
+
 This project is very much in a state of early development so do not expect everything to function or be implented yet.
 
 
