@@ -6,7 +6,14 @@ Sinantra based Open311 server being developed as part of Code for Europe project
 
 Status
 ======
+
 This project is very much in a state of early development so do not expect everything to function or be implented yet.
+
+
+Open311
+=======
+
+The server is built to meet the [Open311 GeoReport v2 specification](http://wiki.open311.org/GeoReport_v2).
 
 
 Data
