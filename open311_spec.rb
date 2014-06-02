@@ -52,6 +52,28 @@ describe 'The Open311 App' do
         end
       end
     end
+    
+    describe "each service should have valid values for" do
+      it "metadata" do
+        valid_values = %w(true false)
+      
+        get '/dev/v2/services.xml'
+        xml_doc  = Nokogiri::XML(last_response.body)
+        xml_doc.xpath("//service").each do |service_xml|
+          expect(valid_values).to include(service_xml.xpath('metadata').text)
+        end
+      end
+      
+      it "type" do
+        valid_values = %w(realtime batch blackbox)
+      
+        get '/dev/v2/services.xml'
+        xml_doc  = Nokogiri::XML(last_response.body)
+        xml_doc.xpath("//service").each do |service_xml|
+          expect(valid_values).to include(service_xml.xpath('type').text)
+        end
+      end
+    end
   end
   
   describe 'get service' do

@@ -35,7 +35,7 @@ get '/dev/v2/services.xml' do
       xml.send(:'service') {
         xml.send(:'service_code', '001')
         xml.send(:'service_name', 'Curb or curb ramp defect')
-        xml.send(:'type', 'realtime')
+        xml.send(:'type', 'blackbox')
         xml.send(:'keywords', 'curb, pavement, uneven')
         xml.send(:'group', 'street')
         xml.send(:'description', 'Pavement curb or ramp has problems such as cracking, missing pieces, holes, and/or chipped curb')
