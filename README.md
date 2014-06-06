@@ -29,3 +29,15 @@ Running the app
 `rackup -p 4567`
 
 Replace 4567 with whatever port you wish to run the server on.
+
+Calling the API
+===
+
+To get a list of the services use
+
+`http://localhost:4567/dev/v2/services.xml`
+
+
+To get the service definition for a service use (replacing 001 with the service_code for the service)
+
+`http://localhost:4567/dev/v2/services/001.xml`
