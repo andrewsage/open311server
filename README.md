@@ -22,3 +22,10 @@ Data
 ====
 
 This server will initial be pre-populated with snapshot data extracted from Aberdeen City Council's internal systems.
+
+Running the app
+===
+
+`rackup -p 4567`
+
+Replace 4567 with whatever port you wish to run the server on.

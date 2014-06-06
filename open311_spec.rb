@@ -13,7 +13,8 @@ describe 'The Open311 App' do
   include Rack::Test::Methods
   
   def app
-    Sinatra::Application
+    #Sinatra::Application
+    Open311App
   end
   
   it "says hello" do
