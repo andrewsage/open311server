@@ -3,7 +3,9 @@ require 'nokogiri'
 
 class Open311App < Sinatra::Base
 
-  
+  set :services_api_root, '/dev/v2'
+  set :facilities_api_root, '/dev/v1'
+    
   # The following are temporary data loading routines for development
   # At some future point a database will be used to contain this data
   def load_community_contacts
@@ -49,9 +51,50 @@ class Open311App < Sinatra::Base
   get '/hi' do
     "Hello World!"
   end
+  
+  # http://localhost:4567/dev/v1/facilities/all.xml
+  get "#{settings.facilities_api_root}/facilities/*" do
+    path = params[:splat].first
+    category = path.split('.').first
+    
+    content_type 'text/xml'
+    
+    
+    if category.nil?
+      halt 400, 'facility category was not provided'
+    end
+  
+    valid_categories = ['all']
+    if valid_categories.include?(category) == false
+      halt 404, 'facility category provided was not found'
+    end
+    
+    # as a temp step for now, load all the community contacts
+    load_community_contacts
+    
+    #TODO: Only return content for the require category
+    
+    builder = Nokogiri::XML::Builder.new do |xml|
+      xml.send(:'facilities') {
+        
+        @rows.each do |row|
+          xml.send(:'facility') {
+            xml.send(:'id', "#{row['Id']}")
+            xml.send(:'facility_name', row['ItemTitle'])
+            xml.send(:'expiration', '2099-12-31T23:59:59Z')
+            xml.send(:'type', 'Community Group')
+            xml.send(:'brief_description', row['Other'])
+          }
+        end
+        
+      }
+    end
+    
+    builder.to_xml
+  end
 
   # http://localhost:4567/dev/v2/services.xml
-  get '/dev/v2/services.xml' do
+  get "#{settings.services_api_root}/services.xml" do
     # jurisdiction_id is optional if there is only a single endpoint server
     jurisdiction_id = params[:jurisdiction_id]
     content_type 'text/xml'
@@ -81,7 +124,7 @@ class Open311App < Sinatra::Base
 
 
   # http://localhost:4567/dev/v2/services/033.xml
-  get '/dev/v2/services/*' do
+  get "#{settings.services_api_root}/services/*" do
     path = params[:splat].first
     service_code = path.split('.').first
     # jurisdiction_id is optional if there is only a single endpoint server
