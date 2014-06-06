@@ -9,13 +9,13 @@ Status
 
 [![Build Status](https://travis-ci.org/andrewsage/open311server.svg?branch=master)](https://travis-ci.org/andrewsage/open311server)
 
-This project is very much in a state of early development so do not expect everything to function or be implented yet.
+This project is very much in a state of early development so do not expect everything to function or be implemented yet.
 
 
 Open311
 =======
 
-The server is built to meet the [Open311 GeoReport v2 specification](http://wiki.open311.org/GeoReport_v2).
+The server is built to meet the [Open311 GeoReport v2 specification](http://wiki.open311.org/GeoReport_v2) and [Open311 Inquiry v1 specification](http://wiki.open311.org/Inquiry_v1).
 
 
 Data
