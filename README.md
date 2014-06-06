@@ -23,6 +23,11 @@ Data
 
 This server will initial be pre-populated with snapshot data extracted from Aberdeen City Council's internal systems.
 
+
+The current data include is:
+
+* Community Groups contact information within the geographic region of Aberdeen City Council
+
 Running the app
 ===
 
