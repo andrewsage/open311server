@@ -17,6 +17,15 @@ Open311
 
 The server is built to meet the [Open311 GeoReport v2 specification](http://wiki.open311.org/GeoReport_v2) and [Open311 Inquiry v1 specification](http://wiki.open311.org/Inquiry_v1).
 
+Inquiry v1
+----
+The Inquiry v1 specificiation was developed by NYC for their needs. In order to make the facility information more relevant for the UK some additional fields have been added as follows:
+
+* postcode - the post code of the Facility
+* phone - the phone number of the Facility
+* contact - name of a contact for the Facility
+* email - email address for the Facility
+* web - web address for the Facility
 
 Data
 ====
@@ -26,7 +35,7 @@ This server will initial be pre-populated with snapshot data extracted from Aber
 
 The current data include is:
 
-* Community Groups contact information within the geographic region of Aberdeen City Council
+* Community Groups contact information within the geographic region of Aberdeen City Council (note this data has not been cleaned and may appear corrupt for some results)
 
 Running the app
 ===

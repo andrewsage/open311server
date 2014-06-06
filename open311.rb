@@ -34,6 +34,37 @@ class Open311App < Sinatra::Base
     
     @rows.sort! { |a, b| a['ItemTitle'] <=> b['ItemTitle'] }
   end
+  
+  def community_facility_summary(xml, row)
+    xml.send(:'facility') {
+      xml.send(:'id', "#{row['Id']}")
+      xml.send(:'facility_name', row['ItemTitle'])
+      xml.send(:'expiration', '2099-12-31T23:59:59Z')
+      xml.send(:'type', 'Community Group')
+      xml.send(:'brief_description', row['Other'])
+    }
+  end
+  
+  def community_facility_detailed(xml, row)
+    xml.send(:'facility') {
+      xml.send(:'id', "#{row['Id']}")
+      xml.send(:'facility_name', row['ItemTitle'])
+      xml.send(:'expiration', '2099-12-31T23:59:59Z')
+      xml.send(:'type', 'Community Group')
+      xml.send(:'brief_description', row['Other'])
+      xml.send(:'description', row['Other'] + row['OtherTwo'])
+      xml.send(:'features') {
+      
+      }
+      xml.send(:'address', "#{row['FirstAddressOne']}, #{row['FirstAddressTwo']}, #{row['FirstAddressThree']}, #{row['FirstAddressFour']}")
+      xml.send(:'postcode', row['FirstPost'])
+      xml.send(:'phone', row['FirstPhone'])
+      xml.send(:'email', row['FirstEmail'])
+      xml.send(:'web', row['WebOne'])
+      xml.send(:'displayed_hours', row['Times'] + row['TimesTwo'])
+      xml.send(:'eligibility_information', row['Restricted'])
+    }
+  end
 
   def valid_jurisdiction?(jurisdiction_id)
     valid = true
@@ -59,32 +90,56 @@ class Open311App < Sinatra::Base
     
     content_type 'text/xml'
     
+    # as a temp step for now, load all the community contacts
+    load_community_contacts
+    
+    # build a list of valid facilities
+    valid_facilities = []
+    @rows.each do |row|
+      valid_facilities << row['Id']
+    end
     
     if category.nil?
       halt 400, 'facility category was not provided'
     end
   
     valid_categories = ['all']
-    if valid_categories.include?(category) == false
+    if valid_categories.include?(category) == false and valid_facilities.include?(category) == false
       halt 404, 'facility category provided was not found'
     end
     
-    # as a temp step for now, load all the community contacts
-    load_community_contacts
+    
     
     #TODO: Only return content for the require category
+    
+    #TODO: Generate URI for each facility
+    
     
     builder = Nokogiri::XML::Builder.new do |xml|
       xml.send(:'facilities') {
         
-        @rows.each do |row|
-          xml.send(:'facility') {
-            xml.send(:'id', "#{row['Id']}")
-            xml.send(:'facility_name', row['ItemTitle'])
-            xml.send(:'expiration', '2099-12-31T23:59:59Z')
-            xml.send(:'type', 'Community Group')
-            xml.send(:'brief_description', row['Other'])
-          }
+        # Are we looking for category summary facilities
+        # or are we looking for a specific facility?
+            
+        if valid_categories.include?(category)
+          @rows.each do |row|
+            community_facility_summary(xml, row)
+          end
+        end
+        
+        if valid_facilities.include?(category)
+          
+          row = nil
+          @rows.each do |check_row|
+            if check_row['Id'] == category
+              row = check_row
+              break
+            end
+          end
+          
+          if row
+           community_facility_detailed(xml, row)
+          end
         end
         
       }

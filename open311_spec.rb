@@ -60,6 +60,31 @@ describe 'The Open311 App' do
     end
   end
   
+  describe 'get facility' do
+    it "should be xml" do
+      get '/dev/v1/facilities/1.xml'
+      expect(last_response['Content-Type']).to start_with('text/xml')
+    end
+    
+    it "should return 400 for no facility_id" do
+      get '/dev/v1/facilities/'
+      expect(last_response.status).to eq(400)
+      expect(last_response.body).to eq('facility category was not provided')
+    end
+    
+    it "should return 404 for invalid facility_id" do
+      get '/dev/v1/facilities/fred.xml'
+      expect(last_response.status).to eq(404)
+      expect(last_response.body).to eq('facility category provided was not found')
+    end
+    
+    it "should have facilities tag" do
+      get '/dev/v1/facilities/1.xml'
+      xml_doc  = Nokogiri::XML(last_response.body)
+      expect(xml_doc.xpath('facilities')).not_to be_empty
+    end
+  end
+  
   describe 'lists services' do
     it "should return 404 for invalid jurisdiction_id" do
       get '/dev/v2/services.xml?jurisdiction_id=city.gov'
