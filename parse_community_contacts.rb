@@ -9,9 +9,9 @@ File.open("./data/CommunityContacts.txt", "r") do |infile|
     line = line.chomp("|")
     # work out the headers
     if headers.count == 0
-      headers = line.encode("UTF-8", invalid: :replace, undef: :replace).split(",")
+      headers = line.encode("UTF-8", invalid: :replace, undef: :replace).split("$")
     else
-      columns = line.encode("UTF-8", invalid: :replace, undef: :replace).split(",")
+      columns = line.encode("UTF-8", invalid: :replace, undef: :replace).split("$")
       row = Hash.new
       columns.each_with_index { |item, index|
         row[headers[index]] = item
