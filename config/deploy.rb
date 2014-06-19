@@ -2,17 +2,17 @@ require 'rvm/capistrano'
 require 'bundler/capistrano'
 
 #RVM and bundler settings
-set :bundle_cmd, "/home/deploy/.rvm/gems/ruby-2.0.0-p247@global/bin/bundle"
-set :bundle_dir, "/home/deploy/.rvm/gems/ruby-2.0.0-p247/gems"
+set :bundle_cmd, "/home/deploy/.rvm/gems/ruby-2.1.2/@global/bin/bundle"
+set :bundle_dir, "/home/deploy/.rvm/gems/ruby-2.1.2/gems"
 set :rvm_ruby_string, :local
 set :rack_env, :production
 
 #general info
-set :user, 'deploy'
-set :domain, 'open311.asae.co.uk'
-set :applicationdir, "/var/www/codelitt"
-set :scm, 'git'
+set :user, 'open311'
 set :application, "open311"
+set :domain, 'open311.asae.co.uk'
+set :applicationdir, "/home/#{user}/#{application}"
+set :scm, 'git'
 set :repository,  "git@github.com:andrewsage/open311server.git"
 set :branch, 'master'
 set :git_shallow_clone, 1
