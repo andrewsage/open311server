@@ -1,12 +1,6 @@
 require 'rvm/capistrano'
 require 'bundler/capistrano'
 
-#RVM and bundler settings
-set :bundle_cmd, "/home/deploy/.rvm/gems/ruby-2.1.2/@global/bin/bundle"
-set :bundle_dir, "/home/deploy/.rvm/gems/ruby-2.1.2/gems"
-set :rvm_ruby_string, :local
-set :rack_env, :production
-
 #general info
 set :user, 'open311'
 set :application, "open311"
@@ -19,6 +13,13 @@ set :git_shallow_clone, 1
 set :scm_verbose, true
 set :deploy_via, :remote_cache
 
+#RVM and bundler settings
+set :bundle_cmd, "/home/#{user}/.rvm/gems/ruby-2.1.2@global/bin/bundle"
+set :bundle_dir, "/home/#{user}/.rvm/gems/ruby-2.1.2/gems"
+set :rvm_ruby_string, '2.1.2'
+set :rack_env, :production
+set :rvm_type, :user
+
 role :web, domain                          # Your HTTP server, Apache/etc
 role :app, domain                          # This may be the same as your `Web` server
 role :db,  domain, :primary => true # This is where Rails migrations will run
@@ -29,8 +30,8 @@ set :deploy_via, :export
 
 #addition settings. mostly ssh
 ssh_options[:forward_agent] = true
-ssh_options[:keys] = [File.join(ENV["HOME"], ".ssh", "id_rsa")]
-ssh_options[:paranoid] = false
+#ssh_options[:keys] = [File.join(ENV["HOME"], ".ssh", "id_rsa")]
+#ssh_options[:paranoid] = false
 default_run_options[:pty] = true
 # if you want to clean up old releases on each deploy uncomment this:
 # after "deploy:restart", "deploy:cleanup"
