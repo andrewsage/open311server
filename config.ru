@@ -1,5 +1,9 @@
-require 'rubygems'
-require 'sinatra'
-require File.expand_path '../open311.rb', __FILE__
+root_dir = File.dirname(__FILE__)
+app_file = File.join(root_dir, 'open311.rb')
+require app_file
 
-run Open311App.new
+set :environment, ENV['RACK_ENV'].to_sym
+set :root, root_dir
+set :app_file, app_file
+set :run, false
+run Open311App
