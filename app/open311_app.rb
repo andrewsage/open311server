@@ -2,6 +2,7 @@ class Open311App < Sinatra::Base
 
   set :services_api_root, '/dev/v2'
   set :facilities_api_root, '/dev/v1'
+  set :facility_prefix_community_group, 'CG'
 
   # The following are temporary data loading routines for development
   # At some future point a database will be used to contain this data
@@ -24,6 +25,10 @@ class Open311App < Sinatra::Base
           columns.each_with_index { |item, index|
             row[@headers[index]] = item
           }
+          # set the ID to the correct format for Community Groups
+          row['Id'] = "#{settings.facility_prefix_community_group}#{row['Id']}"
+          # set our internal type to Community Group
+          row['internaltype'] = 'Community Groups'
           @rows << row
         end
       end
@@ -37,7 +42,7 @@ class Open311App < Sinatra::Base
       xml.send(:'id', "#{row['Id']}")
       xml.send(:'facility_name', row['ItemTitle'])
       xml.send(:'expiration', '2099-12-31T23:59:59Z')
-      xml.send(:'type', 'Community Group')
+      xml.send(:'type', row['internaltype'])
       xml.send(:'brief_description', row['Other'])
     }
   end
@@ -47,7 +52,7 @@ class Open311App < Sinatra::Base
       xml.send(:'id', "#{row['Id']}")
       xml.send(:'facility_name', row['ItemTitle'])
       xml.send(:'expiration', '2099-12-31T23:59:59Z')
-      xml.send(:'type', 'Community Group')
+      xml.send(:'type', row['internaltype'])
       xml.send(:'brief_description', row['Other'])
       xml.send(:'description', row['Other'] + row['OtherTwo'])
       xml.send(:'features') {
@@ -120,7 +125,9 @@ class Open311App < Sinatra::Base
 
         if valid_categories.include?(category)
           @rows.each do |row|
-            community_facility_summary(xml, row)
+            if row['internaltype'].downcase == category.downcase or category == 'all'
+              community_facility_summary(xml, row)
+            end
           end
         end
 
