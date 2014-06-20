@@ -1,6 +1,6 @@
 describe 'The Open311 App' do
 
-  it "says hello" do
+  it "should return a web page" do
     get '/'
     expect(last_response).to be_ok
   end
@@ -61,7 +61,7 @@ describe 'The Open311 App' do
     end
 
     it "should have facilities tag" do
-      get '/dev/v1/facilities/1.xml'
+      get '/dev/v1/facilities/CP01.xml'
       xml_doc  = Nokogiri::XML(last_response.body)
       expect(xml_doc.xpath('facilities')).not_to be_empty
     end

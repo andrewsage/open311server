@@ -292,7 +292,7 @@ class Open311App < Sinatra::Base
             xml.send(:'description', 'What community group are you looking for?')
             xml.send(:'values') {
 
-              @rows.each do |row|
+              @community_groups.each do |row|
 
                 xml.send(:'value') {
                   xml.send(:'key', row['Id']) # The unique identifier associated with an option for singlevaluelist or multivaluelist. This is analogous to the value attribute in an html option tag.
