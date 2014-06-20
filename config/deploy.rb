@@ -36,8 +36,6 @@ default_run_options[:pty] = true
 # if you want to clean up old releases on each deploy uncomment this:
 # after "deploy:restart", "deploy:cleanup"
 
-# if you're still using the script/reaper helper you will need
-# these http://github.com/rails/irs_process_scripts
 
 # After an initial (cold) deploy, symlink the app and restart nginx
 after "deploy:cold" do
