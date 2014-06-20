@@ -1,0 +1,39 @@
+<h1>Open311 Server</h1>
+<p>This is a Sinantra based Open311 server being developed as part of Code for Europe project for Aberdeen City Council.</p>
+
+<p>This project is very much in a state of early development so do not expect everything to function or be implemented yet.</p>
+
+<p>The server is built to meet the <a href="http://wiki.open311.org/GeoReport_v2">Open311 GeoReport v2 specification</a> and <a href="http://wiki.open311.org/Inquiry_v1">Open311 Inquiry v1 specification</a>.</p>
+
+<h2>Inquiry v1</h2>
+<p>The Inquiry v1 specificiation was developed by NYC for their needs. In order to make the facility information more relevant for the UK some additional fields have been added as follows:</p>
+
+<ul>
+  <li>postcode - the post code of the Facility</li>
+  <li>phone - the phone number of the Facility</li>
+  <li>contact - name of a contact for the Facility</li>
+  <li>email - email address for the Facility</li>
+  <li>web - web address for the Facility</li>
+</ul>
+
+
+
+<h2>Get Facilities List</h2>
+
+<p>
+  To get a list of the facilities use: http://&lt;content_api_root&gt;/facilities/&lt;category/&gt;.xml
+<p>
+
+<ul>
+  <li><a href="/dev/v1/facilities/all.xml">/dev/v1/facilities/all.xml</a></li>
+  <li><a href="/dev/v1/facilities/community%20groups.xml">/dev/v1/facilities/community%20groups.xml</a></li>
+</ul>
+
+
+
+<h2>Get Facility Details</h2>
+<p>To get the facility detailed information use: http://&lt;content_api_root&gt;/facilities/&lt;facility_id&gt;
+
+<ul>
+  <li><a href="/dev/v1/facilities/1432.xml">/dev/v1/facilities/1432.xml</a></li>
+</ul>

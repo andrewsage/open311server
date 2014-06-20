@@ -79,8 +79,8 @@ class Open311App < Sinatra::Base
     valid
   end
 
-  get '/hi' do
-    "Hello World!"
+  get '/' do
+    erb :index
   end
 
   # http://localhost:4567/dev/v1/facilities/all.xml
@@ -103,9 +103,9 @@ class Open311App < Sinatra::Base
       halt 400, 'facility category was not provided'
     end
 
-    valid_categories = ['all']
+    valid_categories = ['all', 'community groups']
     if valid_categories.include?(category) == false and valid_facilities.include?(category) == false
-      halt 404, 'facility category provided was not found'
+      halt 404, "facility category provided was not found: #{category}"
     end
 
 
