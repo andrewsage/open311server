@@ -2,4 +2,4 @@ language: ruby
 rvm:
   - "1.9.2"
   - "1.9.3"
-script: bundle exec rspec open311_spec.rb
+script: bundle exec rspec

@@ -1,6 +1,3 @@
-require 'sinatra'
-require 'nokogiri'
-
 class Open311App < Sinatra::Base
 
   set :services_api_root, '/dev/v2'
@@ -103,7 +100,7 @@ class Open311App < Sinatra::Base
       halt 400, 'facility category was not provided'
     end
 
-    valid_categories = ['all', 'community groups']
+    valid_categories = ['all', 'community groups', 'parking']
     if valid_categories.include?(category) == false and valid_facilities.include?(category) == false
       halt 404, "facility category provided was not found: #{category}"
     end

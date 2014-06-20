@@ -1,21 +1,4 @@
-ENV['RACK_ENV'] = 'test'
-
-require './open311'
-require 'rspec'
-require 'rack/test'
-require 'nokogiri'
-
-RSpec.configure do |conf|
-  conf.include Rack::Test::Methods
-end
-
 describe 'The Open311 App' do
-  include Rack::Test::Methods
-
-  def app
-    #Sinatra::Application
-    Open311App
-  end
 
   it "says hello" do
     get '/'
