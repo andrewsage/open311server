@@ -3,13 +3,40 @@ class Open311App < Sinatra::Base
   set :services_api_root, '/dev/v2'
   set :facilities_api_root, '/dev/v1'
   set :facility_prefix_community_group, 'CG'
+  set :facility_prefix_car_park, 'CP'
 
   # The following are temporary data loading routines for development
   # At some future point a database will be used to contain this data
+
+  def load_car_parks
+
+    raw_data = [
+      ["CP01", "Harriet Street Car Park"],
+      ["CP02", "Loch Street Car Park"],
+      ["CP03", "The Mall Trinity Car Park"],
+      ["CP04", "Shiprow"],
+      ["CP05", "Gallowgate Car Park"],
+      ["CP06", "West North Street Car Park"],
+      ["CP07", "Denburn Car Park"],
+      ["CP08", "Chapel Street Car Park"],
+      ["CP09", "South College Street Car Park"],
+      ["CP10", "Union Square Car Park"]
+      ]
+
+    @car_parks = []
+    raw_data.each do |row|
+      car_park = Hash.new
+
+      car_park['Id'] = row[0]
+      car_park['name'] = row[1]
+      @car_parks << car_park
+    end
+  end
+
   def load_community_contacts
     # Columns separated by , rows separated by |
     # The file does contain newlines in fields without quotes
-    @rows = []
+    @community_groups = []
     @headers = []
     File.open("./data/CommunityContacts.txt", "r") do |infile|
 
@@ -27,14 +54,12 @@ class Open311App < Sinatra::Base
           }
           # set the ID to the correct format for Community Groups
           row['Id'] = "#{settings.facility_prefix_community_group}#{row['Id']}"
-          # set our internal type to Community Group
-          row['internaltype'] = 'Community Groups'
-          @rows << row
+          @community_groups << row
         end
       end
     end
 
-    @rows.sort! { |a, b| a['ItemTitle'] <=> b['ItemTitle'] }
+    @community_groups.sort! { |a, b| a['ItemTitle'] <=> b['ItemTitle'] }
   end
 
   def community_facility_summary(xml, row)
@@ -42,7 +67,7 @@ class Open311App < Sinatra::Base
       xml.send(:'id', "#{row['Id']}")
       xml.send(:'facility_name', row['ItemTitle'])
       xml.send(:'expiration', '2099-12-31T23:59:59Z')
-      xml.send(:'type', row['internaltype'])
+      xml.send(:'type', 'Community Group')
       xml.send(:'brief_description', row['Other'])
     }
   end
@@ -52,7 +77,7 @@ class Open311App < Sinatra::Base
       xml.send(:'id', "#{row['Id']}")
       xml.send(:'facility_name', row['ItemTitle'])
       xml.send(:'expiration', '2099-12-31T23:59:59Z')
-      xml.send(:'type', row['internaltype'])
+      xml.send(:'type', 'Community Group')
       xml.send(:'brief_description', row['Other'])
       xml.send(:'description', row['Other'] + row['OtherTwo'])
       xml.send(:'features') {
@@ -65,6 +90,37 @@ class Open311App < Sinatra::Base
       xml.send(:'web', row['WebOne'])
       xml.send(:'displayed_hours', row['Times'] + row['TimesTwo'])
       xml.send(:'eligibility_information', row['Restricted'])
+    }
+  end
+
+  def parking_facility_summary(xml, row)
+    xml.send(:'facility') {
+      xml.send(:'id', "#{row['Id']}")
+      xml.send(:'facility_name', row['name'])
+      xml.send(:'expiration', '2099-12-31T23:59:59Z')
+      xml.send(:'type', 'Parking')
+      xml.send(:'brief_description', row['name'])
+    }
+  end
+
+  def parking_facility_detailed(xml, row)
+    xml.send(:'facility') {
+      xml.send(:'id', "#{row['Id']}")
+      xml.send(:'facility_name', row['name'])
+      xml.send(:'expiration', '2099-12-31T23:59:59Z')
+      xml.send(:'type', 'Parking')
+      xml.send(:'brief_description', row['name'])
+      xml.send(:'features') {
+        xml.send(:'occupancy', 500)
+        xml.send(:'occupancypercentage', 60)
+      }
+      xml.send(:'address', "")
+      xml.send(:'postcode', "")
+      xml.send(:'phone', "")
+      xml.send(:'email', "")
+      xml.send(:'web', "")
+      xml.send(:'displayed_hours', row['Times'])
+      xml.send(:'eligibility_information', "")
     }
   end
 
@@ -95,9 +151,15 @@ class Open311App < Sinatra::Base
     # as a temp step for now, load all the community contacts
     load_community_contacts
 
+    #as a temp step for now, load all the parking data
+    load_car_parks
+
     # build a list of valid facilities
     valid_facilities = []
-    @rows.each do |row|
+    @community_groups.each do |row|
+      valid_facilities << row['Id']
+    end
+    @car_parks.each do |row|
       valid_facilities << row['Id']
     end
 
@@ -110,13 +172,6 @@ class Open311App < Sinatra::Base
       halt 404, "facility category provided was not found: #{category}"
     end
 
-
-
-    #TODO: Only return content for the require category
-
-    #TODO: Generate URI for each facility
-
-
     builder = Nokogiri::XML::Builder.new do |xml|
       xml.send(:'facilities') {
 
@@ -124,9 +179,14 @@ class Open311App < Sinatra::Base
         # or are we looking for a specific facility?
 
         if valid_categories.include?(category)
-          @rows.each do |row|
-            if row['internaltype'].downcase == category.downcase or category == 'all'
+          if category.downcase == 'community groups' or category == 'all'
+            @community_groups.each do |row|
               community_facility_summary(xml, row)
+            end
+          end
+          if category.downcase == 'parking' or category == 'all'
+            @car_parks.each do |car_park|
+              parking_facility_summary(xml, car_park)
             end
           end
         end
@@ -134,7 +194,7 @@ class Open311App < Sinatra::Base
         if valid_facilities.include?(category)
 
           row = nil
-          @rows.each do |check_row|
+          @community_groups.each do |check_row|
             if check_row['Id'] == category
               row = check_row
               break
@@ -142,7 +202,18 @@ class Open311App < Sinatra::Base
           end
 
           if row
-           community_facility_detailed(xml, row)
+            community_facility_detailed(xml, row)
+          else
+            @car_parks.each do |check_row|
+              if check_row['Id'] == category
+                row = check_row
+                break
+              end
+            end
+
+            if row
+              parking_facility_detailed(xml, row)
+            end
           end
         end
 
