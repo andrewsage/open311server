@@ -1,7 +1,7 @@
 open311server
 =============
 
-Sinantra based Open311 server being developed as part of Code for Europe project for Aberdeen City Council.
+[Sinatra](http://www.sinatrarb.com) based Open311 server being developed as part of Code for Europe project for Aberdeen City Council.
 
 
 Status
@@ -10,6 +10,8 @@ Status
 [![Build Status](https://travis-ci.org/andrewsage/open311server.svg?branch=master)](https://travis-ci.org/andrewsage/open311server)
 
 This project is very much in a state of early development so do not expect everything to function or be implemented yet.
+
+There is a demo version of the server running at [http://open311server.herokuapp.com](http://open311server.herokuapp.com)
 
 
 Open311
