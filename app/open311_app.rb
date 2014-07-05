@@ -11,16 +11,16 @@ class Open311App < Sinatra::Base
   def load_car_parks
 
     raw_data = [
-      ["CP01", "Harriet Street Car Park"],
-      ["CP02", "Loch Street Car Park"],
+      ["CP01", "Harriet Street Car Park", 57.148624,-2.1006504],
+      ["CP02", "Loch Street Car Park", 57.149373,-2.1001346],
       ["CP03", "The Mall Trinity Car Park"],
-      ["CP04", "Shiprow"],
-      ["CP05", "Gallowgate Car Park"],
-      ["CP06", "West North Street Car Park"],
-      ["CP07", "Denburn Car Park"],
-      ["CP08", "Chapel Street Car Park"],
-      ["CP09", "South College Street Car Park"],
-      ["CP10", "Union Square Car Park"]
+      ["CP04", "Shiprow", 57.1468981,-2.093786],
+      ["CP05", "Gallowgate Car Park", 57.1512768,-2.0986005],
+      ["CP06", "West North Street Car Park", 57.1499781,-2.0930345],
+      ["CP07", "Denburn Car Park", 57.148618,-2.1065774],
+      ["CP08", "Chapel Street Car Park", 57.1458485,-2.1112149],
+      ["CP09", "South College Street Car Park", 57.1378417,-2.0981296],
+      ["CP10", "Union Square Car Park", 57.1438026,-2.0953213]
       ]
 
     @car_parks = []
@@ -29,6 +29,9 @@ class Open311App < Sinatra::Base
 
       car_park['Id'] = row[0]
       car_park['name'] = row[1]
+      car_park['lat'] = row[2]
+      car_park['long'] = row[3]
+
       @car_parks << car_park
     end
   end
@@ -100,6 +103,8 @@ class Open311App < Sinatra::Base
       xml.send(:'expiration', '2099-12-31T23:59:59Z')
       xml.send(:'type', 'Parking')
       xml.send(:'brief_description', row['name'])
+      xml.send(:'lat', row['lat'])
+      xml.send(:'long', row['long'])
     }
   end
 
@@ -110,6 +115,8 @@ class Open311App < Sinatra::Base
       xml.send(:'expiration', '2099-12-31T23:59:59Z')
       xml.send(:'type', 'Parking')
       xml.send(:'brief_description', row['name'])
+      xml.send(:'lat', row['lat'])
+      xml.send(:'long', row['long'])
       xml.send(:'features') {
         xml.send(:'occupancy', 500)
         xml.send(:'occupancypercentage', 60)
