@@ -13,7 +13,7 @@ class Open311App < Sinatra::Base
     raw_data = [
       ["CP01", "Harriet Street Car Park", 57.148624,-2.1006504],
       ["CP02", "Loch Street Car Park", 57.149373,-2.1001346],
-      ["CP03", "The Mall Trinity Car Park"],
+      ["CP03", "The Mall Trinity Car Park", 57.1458388,-2.1007275],
       ["CP04", "Shiprow", 57.1468981,-2.093786],
       ["CP05", "Gallowgate Car Park", 57.1512768,-2.0986005],
       ["CP06", "West North Street Car Park", 57.1499781,-2.0930345],
@@ -40,8 +40,10 @@ class Open311App < Sinatra::Base
     # Columns separated by , rows separated by |
     # The file does contain newlines in fields without quotes
     @community_groups = []
+
+    @contacts = []
     @headers = []
-    File.open("./data/CommunityContacts.txt", "r") do |infile|
+    File.open("./data/Contact.txt", "r") do |infile|
 
       while (line = infile.gets('|'))
         line = line.force_encoding('BINARY')
@@ -56,8 +58,103 @@ class Open311App < Sinatra::Base
             row[@headers[index]] = item
           }
           # set the ID to the correct format for Community Groups
-          row['Id'] = "#{settings.facility_prefix_community_group}#{row['Id']}"
-          @community_groups << row
+          #row['Id'] = "#{settings.facility_prefix_community_group}#{row['Id']}"
+          @contacts << row
+        end
+      end
+    end
+
+    @headers = []
+    @categories = []
+    File.open("./data/Category.txt", "r") do |infile|
+
+    while (line = infile.gets('|'))
+        line = line.force_encoding('BINARY')
+        line = line.chomp("|")
+        # work out the headers
+        if @headers.count == 0
+          @headers = line.encode("UTF-8", invalid: :replace, undef: :replace).split("$")
+        else
+          columns = line.encode("UTF-8", invalid: :replace, undef: :replace).split("$")
+          row = Hash.new
+          columns.each_with_index { |item, index|
+            row[@headers[index]] = item
+          }
+          @categories << row
+        end
+      end
+    end
+
+    @headers = []
+    @subcategories = []
+    File.open("./data/SubCategory.txt", "r") do |infile|
+
+    while (line = infile.gets('|'))
+        line = line.force_encoding('BINARY')
+        line = line.chomp("|")
+        # work out the headers
+        if @headers.count == 0
+          @headers = line.encode("UTF-8", invalid: :replace, undef: :replace).split("$")
+        else
+          columns = line.encode("UTF-8", invalid: :replace, undef: :replace).split("$")
+          row = Hash.new
+          columns.each_with_index { |item, index|
+            row[@headers[index]] = item
+          }
+          category = nil
+          @categories.each do |check_category|
+            if check_category['Id'] == row['CategoryId']
+              category = check_category
+              break
+            end
+          end
+          row.delete('CategoryId')
+          row['Category'] = category['Name']
+          @subcategories << row
+        end
+      end
+    end
+    @subcategories.sort! { |a, b| a['Name'] <=> b['Name'] }
+
+
+    @headers = []
+    @contactsubcategories = []
+    File.open("./data/ContactSubcategory.txt", "r") do |infile|
+
+    while (line = infile.gets('|'))
+        line = line.force_encoding('BINARY')
+        line = line.chomp("|")
+        # work out the headers
+        if @headers.count == 0
+          @headers = line.encode("UTF-8", invalid: :replace, undef: :replace).split("$")
+        else
+          columns = line.encode("UTF-8", invalid: :replace, undef: :replace).split("$")
+          row = Hash.new
+          columns.each_with_index { |item, index|
+            row[@headers[index]] = item
+          }
+          subcategory = nil
+          @subcategories.each do |check_subcategory|
+            if check_subcategory['Id'] == row['SubCategoryId']
+              subcategory = check_subcategory
+              break
+            end
+          end
+          row['SubCategory'] = subcategory['Name'] unless subcategory.nil?
+          row['Category'] = subcategory['Category'] unless subcategory.nil?
+          contact = nil
+          @contacts.each do |check_contact|
+            if check_contact['Id'] == row['ContactId']
+              contact = check_contact
+              break
+            end
+          end
+          if contact
+            row.merge!(contact)
+            # set the ID to the correct format for Community Groups
+            row['Id'] = "#{settings.facility_prefix_community_group}#{row['Id']}"
+            @community_groups << row
+          end
         end
       end
     end
@@ -67,7 +164,14 @@ class Open311App < Sinatra::Base
 
   def community_facility_summary(xml, row)
     xml.send(:'facility') {
+=begin
+      row.keys.each do |key|
+        xml.send(:"#{key}", row[key])
+      end
+=end
       xml.send(:'id', "#{row['Id']}")
+      xml.send(:'category', row['Category'])
+      xml.send(:'sub_category', row['SubCategory'])
       xml.send(:'facility_name', row['ItemTitle'])
       xml.send(:'expiration', '2099-12-31T23:59:59Z')
       xml.send(:'type', 'Community Group')
@@ -147,6 +251,55 @@ class Open311App < Sinatra::Base
   get '/' do
     erb :index
   end
+
+  # http://localhost:4567/dev/v1/sub_categories/all.xml
+  get "#{settings.facilities_api_root}/sub_categories/*" do
+  path = params[:splat].first
+    category = path.split('.').first
+
+    content_type 'text/xml'
+
+    # as a temp step for now, load all the community contacts
+    load_community_contacts
+
+    # build a list of valid facilities
+    valid_facilities = []
+    @community_groups.each do |row|
+      valid_facilities << row['Id']
+    end
+
+    if category.nil?
+      halt 400, 'facility category was not provided'
+    end
+
+    valid_categories = ['all']
+    if valid_categories.include?(category) == false and valid_facilities.include?(category) == false
+      halt 404, "facility category provided was not found: #{category}"
+    end
+
+    builder = Nokogiri::XML::Builder.new do |xml|
+      xml.send(:'sub_categories') {
+
+        # Are we looking for category summary facilities
+        # or are we looking for a specific facility?
+
+        if valid_categories.include?(category)
+          if category.downcase == 'community groups' or category == 'all'
+            @subcategories.each do |row|
+              xml.send(:'sub_category') {
+                row.keys.each do |key|
+                xml.send(:"#{key}", row[key])
+              end
+              }
+            end
+          end
+        end
+      }
+    end
+
+    builder.to_xml
+  end
+
 
   # http://localhost:4567/dev/v1/facilities/all.xml
   get "#{settings.facilities_api_root}/facilities/*" do
