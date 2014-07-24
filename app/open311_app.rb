@@ -30,6 +30,8 @@ class Open311App < Sinatra::Base
       school['email'] = school_json['email']
       school['school_type'] = school_json['school_type']
       school['head_teacher'] = school_json['head_teacher']
+      school['lat'] = school_json['lat']
+      school['long'] = school_json['long']
 
       @schools << school
     end

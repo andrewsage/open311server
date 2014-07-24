@@ -38,6 +38,17 @@ This server will initial be pre-populated with snapshot data extracted from Aber
 The current data include is:
 
 * Community Groups contact information within the geographic region of Aberdeen City Council (note this data has not been cleaned and may appear corrupt for some results)
+* Public car parks within the geographic region of Aberdeen City Council
+* Schools within the geographic region of Aberdeen City Council
+
+Scrappers
+====
+
+Some data scrappers have been created for extracting some of the data from existing websites.
+
+The current scrappers are for:
+
+* Schools within the geographic region of Aberdeen City Council [http://www.aberdeencity.gov.uk/education_learning/schools/scc_schools_list.asp](http://www.aberdeencity.gov.uk/education_learning/schools/scc_schools_list.asp)
 
 Running the app
 ===
