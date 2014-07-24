@@ -39,6 +39,7 @@ GEM
       guard
       spoon
     highline (1.6.21)
+    json (1.8.1)
     libnotify (0.8.3)
       ffi (>= 1.0.11)
     listen (2.7.8)
@@ -110,6 +111,7 @@ DEPENDENCIES
   guard-rack
   guard-rspec
   guard-shotgun
+  json (~> 1.8.1)
   net-ssh (= 2.7.0)
   nokogiri
   rack-test

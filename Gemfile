@@ -4,6 +4,7 @@ gem 'thin'
 gem 'sinatra'
 gem 'nokogiri'
 gem 'rake'
+gem 'json', '~> 1.8.1'
 
 # Deployment related
 gem 'capistrano', '~> 2.15.5'
