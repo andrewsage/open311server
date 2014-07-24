@@ -1,4 +1,4 @@
-require 'JSON'
+require 'json'
 
 class Open311App < Sinatra::Base
 
