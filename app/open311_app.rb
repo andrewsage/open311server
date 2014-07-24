@@ -1,12 +1,39 @@
+require 'JSON'
+
 class Open311App < Sinatra::Base
 
   set :services_api_root, '/dev/v2'
   set :facilities_api_root, '/dev/v1'
   set :facility_prefix_community_group, 'CG'
   set :facility_prefix_car_park, 'CP'
+  set :facility_prefix_school, 'SC'
 
   # The following are temporary data loading routines for development
   # At some future point a database will be used to contain this data
+
+  def load_schools
+    @schools = []
+
+    data_path = File.expand_path("../../data/schools.json", __FILE__)
+    json = JSON.parse(IO.read(data_path))
+
+    json.each_with_index do |school_json, index|
+      school = Hash.new
+
+      school['Id'] = "#{settings.facility_prefix_school}#{index + 1}"
+      school['name'] = school_json['school_name']
+      school['address'] = school_json['address']
+      school['post_code'] = school_json['post_code']
+      school['telephone'] = school_json['telephone']
+      school['fax'] = school_json['fax']
+      school['web'] = school_json['web']
+      school['email'] = school_json['email']
+      school['school_type'] = school_json['school_type']
+      school['head_teacher'] = school_json['head_teacher']
+
+      @schools << school
+    end
+  end
 
   def load_car_parks
 
@@ -235,6 +262,42 @@ class Open311App < Sinatra::Base
     }
   end
 
+  def school_facility_summary(xml, row)
+    xml.send(:'facility') {
+      xml.send(:'id', "#{row['Id']}")
+      xml.send(:'facility_name', row['name'])
+      xml.send(:'expiration', '2099-12-31T23:59:59Z')
+      xml.send(:'type', 'School')
+      xml.send(:'brief_description', row['name'])
+      xml.send(:'lat', row['lat'])
+      xml.send(:'long', row['long'])
+    }
+  end
+
+  def school_facility_detailed(xml, row)
+    xml.send(:'facility') {
+      xml.send(:'id', "#{row['Id']}")
+      xml.send(:'facility_name', row['name'])
+      xml.send(:'expiration', '2099-12-31T23:59:59Z')
+      xml.send(:'type', 'School')
+      xml.send(:'brief_description', row['name'])
+      xml.send(:'lat', row['lat'])
+      xml.send(:'long', row['long'])
+      xml.send(:'features') {
+        row['school_type'].each do |type|
+          xml.send(:'school_type', type)
+        end
+        xml.send(:'head_teacher', row['head_teacher'])
+      }
+      xml.send(:'address', row['address'])
+      xml.send(:'postcode', row['post_code'])
+      xml.send(:'phone', row['telephone'])
+      xml.send(:'email', row['email'])
+      xml.send(:'web', row['web'])
+      xml.send(:'eligibility_information', "")
+    }
+  end
+
   def valid_jurisdiction?(jurisdiction_id)
     valid = true
 
@@ -311,8 +374,11 @@ class Open311App < Sinatra::Base
     # as a temp step for now, load all the community contacts
     load_community_contacts
 
-    #as a temp step for now, load all the parking data
+    # as a temp step for now, load all the parking data
     load_car_parks
+
+    # as a temp step for now, load all the schools data
+    load_schools
 
     # build a list of valid facilities
     valid_facilities = []
@@ -322,12 +388,14 @@ class Open311App < Sinatra::Base
     @car_parks.each do |row|
       valid_facilities << row['Id']
     end
-
+    @schools.each do |row|
+      valid_facilities << row['Id']
+    end
     if category.nil?
       halt 400, 'facility category was not provided'
     end
 
-    valid_categories = ['all', 'community groups', 'parking']
+    valid_categories = ['all', 'community groups', 'parking', 'schools']
     if valid_categories.include?(category) == false and valid_facilities.include?(category) == false
       halt 404, "facility category provided was not found: #{category}"
     end
@@ -349,34 +417,44 @@ class Open311App < Sinatra::Base
               parking_facility_summary(xml, car_park)
             end
           end
+          if category.downcase == 'schools' or category == 'all'
+            @schools.each do |school|
+              school_facility_summary(xml, school)
+            end
+          end
         end
 
         if valid_facilities.include?(category)
 
           row = nil
-          @community_groups.each do |check_row|
-            if check_row['Id'] == category
-              row = check_row
-              break
-            end
-          end
 
-          if row
-            community_facility_detailed(xml, row)
-          else
-            @car_parks.each do |check_row|
+          case category[0, 2]
+          when settings.facility_prefix_community_group
+            @community_groups.each do |check_row|
               if check_row['Id'] == category
-                row = check_row
+                community_facility_detailed(xml, check_row)
                 break
               end
             end
 
-            if row
-              parking_facility_detailed(xml, row)
+          when settings.facility_prefix_car_park
+            @car_parks.each do |check_row|
+              if check_row['Id'] == category
+                parking_facility_detailed(xml, check_row)
+                break
+              end
             end
+
+          when settings.facility_prefix_school
+            @schools.each do |check_row|
+                if check_row['Id'] == category
+                  school_facility_detailed(xml, check_row)
+                  break
+                end
+              end
+          else
           end
         end
-
       }
     end
 
