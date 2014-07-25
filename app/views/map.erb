@@ -1,0 +1,125 @@
+<html>
+  <head>
+    <style>
+    .info {
+    padding: 6px 8px;
+    font: 14px/16px Arial, Helvetica, sans-serif;
+    background: white;
+    background: rgba(255,255,255,0.8);
+    box-shadow: 0 0 15px rgba(0,0,0,0.2);
+    border-radius: 5px;
+}
+.info h4 {
+    margin: 0 0 5px;
+    color: #777;
+}
+    </style>
+    <script src="jquery-2.1.1.js"></script>
+    <link rel="stylesheet" href="http://cdn.leafletjs.com/leaflet-0.7.3/leaflet.css"/>
+
+    <script src="http://cdn.leafletjs.com/leaflet-0.7.3/leaflet.js"></script>
+    <script src="https://rawgithub.com/kartena/Proj4Leaflet/master/lib/proj4-compressed.js"></script><!-- proj4js -->
+    <script src="https://rawgithub.com/kartena/Proj4Leaflet/master/src/proj4leaflet.js"></script><!-- proj4leaflet -->
+    <script src="providers.js"></script><!-- OS OpenSpace layer -->
+    <script src="//ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
+
+    <script>
+    $(document).ready(function () {
+
+      "use strict"
+
+    var schools = [];
+    var parking = [];
+    var map = L.map('map');
+
+    var streetsLayer = L.tileLayer('http://otile{s}.mqcdn.com/tiles/1.0.0/map/{z}/{x}/{y}.jpeg', {
+                          attribution: 'Tiles Courtesy of <a href="http://www.mapquest.com/">MapQuest</a> &mdash; Map data &copy; <a href="http://openstreetmap.org">OpenStreetMap</a> contributors, <a href="http://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>',
+                          subdomains: '1234'
+                        });
+    streetsLayer.addTo(map);
+
+    var info = L.control();
+
+    info.onAdd = function (map) {
+        this._div = L.DomUtil.create('div', 'info'); // create a div with a class "info"
+        this.update();
+        return this._div;
+    };
+
+    info.update = function (props) {
+        this._div.innerHTML = '<h4>Facilities in Aberdeen</h4>';
+    };
+
+    info.addTo(map);
+
+
+
+      function parse(document) {
+        $(document).find("facility").each(function() {
+
+          var location = [$(this).find('lat').text(), $(this).find('long').text()];
+          if($(this).find('lat').text() != "") {
+            var myIcon;
+            var marker
+            if($(this).find('type').text() == "Parking") {
+              myIcon = L.icon({
+                iconUrl: 'images/carpark.png',
+                iconSize: [16, 16]
+              });
+              marker = L.marker(location, {icon: myIcon});
+              marker.bindPopup($(this).find('facility_name').text()).openPopup();
+              parking.push(marker);
+            } else {
+              marker = L.marker(location);
+              marker.bindPopup($(this).find('facility_name').text()).openPopup();
+              schools.push(marker);
+            }
+            map.setView(location, 14);
+          }
+        });
+
+        var schoolsLayer = L.layerGroup(schools);
+        var parkingLayer = L.layerGroup(parking);
+
+        schoolsLayer.addTo(map);
+        parkingLayer.addTo(map);
+
+        var baseMaps = {
+          "Streets": streetsLayer
+        }
+
+        var overlayMaps = {
+          "Schools": schoolsLayer,
+          "Parking": parkingLayer
+        };
+
+        L.control.layers(baseMaps, overlayMaps).addTo(map);
+      }
+
+      $.ajax({
+          url: '/dev/v1/facilities/all.xml',
+          dataType: "xml",
+          success: parse,
+            error: function (xhr, ajaxOptions, thrownError) {
+        alert(xhr.status);
+        alert(thrownError);
+      }
+          });
+
+
+      $(".details").click(function() {
+        $('#' + this.id).text('helo');
+        });
+
+      });
+
+
+
+    </script>
+  </head>
+  <body>
+    <p>
+      <div id="map" style="width:100%;height:100%;"></div>
+    </p>
+  </body>
+</html>

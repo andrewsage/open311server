@@ -317,6 +317,10 @@ class Open311App < Sinatra::Base
     erb :index
   end
 
+  get '/map' do
+    erb :map
+  end
+
   # http://localhost:4567/dev/v1/sub_categories/all.xml
   get "#{settings.facilities_api_root}/sub_categories/*" do
   path = params[:splat].first

@@ -36,3 +36,7 @@ build/
 /data/.DS_Store
 
 /.DS_Store
+
+/app/public/.DS_Store
+/app/public/images/.DS_Store
+/app/views/.DS_Store
