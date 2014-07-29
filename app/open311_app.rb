@@ -238,6 +238,10 @@ class Open311App < Sinatra::Base
       xml.send(:'brief_description', row['name'])
       xml.send(:'lat', row['lat'])
       xml.send(:'long', row['long'])
+      xml.send(:'features') {
+        xml.send(:'occupancy', 500)
+        xml.send(:'occupancypercentage', 60)
+      }
     }
   end
 
