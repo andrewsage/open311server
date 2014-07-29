@@ -251,7 +251,7 @@ describe 'The Open311 App' do
       end
     end
 
-    it "each attribute's values should have unique keys" do
+    xit "each attribute's values should have unique keys" do
       get '/dev/v2/services/001.xml'
       xml_doc  = Nokogiri::XML(last_response.body)
       attributes_xml = xml_doc.xpath('service_definition/attributes')
