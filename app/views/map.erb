@@ -62,12 +62,16 @@
             var myIcon;
             var marker
             if($(this).find('type').text() == "Parking") {
+              var occupancy = $(this).find('features').find('occupancy').text();
+              var occupancyPercentage = $(this).find('features').find('occupancypercentage').text();
+              var spaces = (occupancy - ((occupancy / 100) * occupancyPercentage)) | 0;
+              var label = $(this).find('facility_name').text() + " " + spaces + " spaces";
               myIcon = L.icon({
                 iconUrl: 'images/carpark.png',
-                iconSize: [16, 16]
+                iconSize: [24, 24]
               });
               marker = L.marker(location, {icon: myIcon});
-              marker.bindPopup($(this).find('facility_name').text()).openPopup();
+              marker.bindPopup(label).openPopup();
               parking.push(marker);
             } else {
               marker = L.marker(location);
