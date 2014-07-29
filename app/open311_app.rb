@@ -63,6 +63,30 @@ class Open311App < Sinatra::Base
 
       @car_parks << car_park
     end
+
+    # load and add the live parking data
+    doc = Nokogiri::XML(File.open("./data/XMLCarParkData.xml"))
+    root = doc.root
+    items = root.xpath("carPark")
+    items.each do |item|
+      id_code = item.at('systemCodeNumber').text
+      occupancy = item.at('occupancy').text
+      occupancy_percentage = item.at('occupancyPercentage').text
+      date = item.at('date').text
+      id_code = id_code.sub('-', '')
+      car_park = nil
+      @car_parks.each do |check_car_park|
+        if check_car_park['Id'] == id_code
+          car_park = check_car_park
+          break
+        end
+      end
+
+      if car_park
+        car_park['occupancy'] = occupancy
+        car_park['occupancyPercentage'] = occupancy_percentage
+      end
+    end
   end
 
   def load_community_contacts
@@ -240,8 +264,8 @@ class Open311App < Sinatra::Base
       xml.send(:'lat', row['lat'])
       xml.send(:'long', row['long'])
       xml.send(:'features') {
-        xml.send(:'occupancy', 500)
-        xml.send(:'occupancypercentage', 60)
+        xml.send(:'occupancy', row['occupancy'])
+        xml.send(:'occupancypercentage', row['occupancyPercentage'])
       }
     }
   end
@@ -257,8 +281,8 @@ class Open311App < Sinatra::Base
       xml.send(:'lat', row['lat'])
       xml.send(:'long', row['long'])
       xml.send(:'features') {
-        xml.send(:'occupancy', 500)
-        xml.send(:'occupancypercentage', 60)
+        xml.send(:'occupancy', row['occupancy'])
+        xml.send(:'occupancypercentage', row['occupancyPercentage'])
       }
       xml.send(:'address', "")
       xml.send(:'postcode', "")
