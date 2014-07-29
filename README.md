@@ -28,6 +28,7 @@ The Inquiry v1 specificiation was developed by NYC for their needs. In order to 
 * contact - name of a contact for the Facility
 * email - email address for the Facility
 * web - web address for the Facility
+* updated - the date and time that the information was last updated
 
 Data
 ====
