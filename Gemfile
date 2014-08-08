@@ -2,6 +2,10 @@ source 'https://rubygems.org'
 
 gem 'thin'
 gem 'sinatra'
+gem "sqlite3"
+gem "activerecord"
+gem "sinatra-activerecord"
+
 gem 'nokogiri'
 gem 'rake'
 gem 'json', '~> 1.8.1'
@@ -17,6 +21,7 @@ group :development do
   gem 'guard-rspec'
   gem 'guard-shotgun'
   gem 'guard-rack'
+  gem "tux"
 end
 
 group :development, :test do

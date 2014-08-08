@@ -25,3 +25,4 @@ build/
 /app/views/.DS_Store
 data/Community_Councils.dbf
 data/Community_Councils.kmz
+db/development.sqlite3

@@ -1,7 +1,13 @@
 require 'json'
+require "sinatra/activerecord"
+
+class CarPark < ActiveRecord::Base
+end
 
 class Open311App < Sinatra::Base
+  register Sinatra::ActiveRecordExtension
 
+  set :database_file, '../config/database.yml'
   set :services_api_root, '/dev/v2'
   set :facilities_api_root, '/dev/v1'
   set :facility_prefix_community_group, 'CG'
@@ -52,16 +58,21 @@ class Open311App < Sinatra::Base
       ["CP10", "Union Square Car Park", 57.1438026,-2.0953213]
       ]
 
-    @car_parks = []
+
     raw_data.each do |row|
-      car_park = Hash.new
+      car_park_data = Hash.new
+      car_park_data['Id'] = row[0]
+      car_park_data['name'] = row[1]
+      car_park_data['lat'] = row[2]
+      car_park_data['long'] = row[3]
 
-      car_park['Id'] = row[0]
-      car_park['name'] = row[1]
-      car_park['lat'] = row[2]
-      car_park['long'] = row[3]
-
-      @car_parks << car_park
+      car_park = CarPark.find_by_id_public(car_park_data['Id'])
+      if car_park.nil?
+        car_park = CarPark.create(:id_public => car_park_data['Id'],
+          :name => car_park_data['name'],
+          :lat => car_park_data['lat'],
+          :long => car_park_data['long'])
+      end
     end
 
     # load and add the live parking data
@@ -74,17 +85,10 @@ class Open311App < Sinatra::Base
       occupancy_percentage = item.at('occupancyPercentage').text
       date = item.at('date').text
       id_code = id_code.sub('-', '')
-      car_park = nil
-      @car_parks.each do |check_car_park|
-        if check_car_park['Id'] == id_code
-          car_park = check_car_park
-          break
-        end
-      end
-
+      car_park = CarPark.find_by_id_public(id_code)
       if car_park
-        car_park['occupancy'] = occupancy
-        car_park['occupancyPercentage'] = occupancy_percentage
+        car_park.occupancy = occupancy
+        car_park.save
       end
     end
   end
@@ -253,43 +257,43 @@ class Open311App < Sinatra::Base
     }
   end
 
-  def parking_facility_summary(xml, row)
+  def parking_facility_summary(xml, car_park)
     xml.send(:'facility') {
-      xml.send(:'id', "#{row['Id']}")
-      xml.send(:'facility_name', row['name'])
+      xml.send(:'id', "#{car_park.id_public}")
+      xml.send(:'facility_name', car_park.name)
       xml.send(:'expiration', '2099-12-31T23:59:59Z')
       xml.send(:'updated', Time.now.utc.strftime("%Y-%m-%dT%H:%M:%SZ"))
       xml.send(:'type', 'Parking')
-      xml.send(:'brief_description', row['name'])
-      xml.send(:'lat', row['lat'])
-      xml.send(:'long', row['long'])
+      xml.send(:'brief_description', car_park.name)
+      xml.send(:'lat', car_park.lat)
+      xml.send(:'long', car_park.long)
       xml.send(:'features') {
-        xml.send(:'occupancy', row['occupancy'])
-        xml.send(:'occupancypercentage', row['occupancyPercentage'])
+        xml.send(:'occupancy', car_park.occupancy)
+        xml.send(:'capacity', car_park.capacity)
       }
     }
   end
 
-  def parking_facility_detailed(xml, row)
+  def parking_facility_detailed(xml, car_park)
     xml.send(:'facility') {
-      xml.send(:'id', "#{row['Id']}")
-      xml.send(:'facility_name', row['name'])
+      xml.send(:'id', "#{car_park.id_public}")
+      xml.send(:'facility_name', car_park.name)
       xml.send(:'expiration', '2099-12-31T23:59:59Z')
       xml.send(:'updated', Time.now.utc.strftime("%Y-%m-%dT%H:%M:%SZ"))
       xml.send(:'type', 'Parking')
-      xml.send(:'brief_description', row['name'])
-      xml.send(:'lat', row['lat'])
-      xml.send(:'long', row['long'])
+      xml.send(:'brief_description', car_park.name)
+      xml.send(:'lat', car_park.lat)
+      xml.send(:'long', car_park.long)
       xml.send(:'features') {
-        xml.send(:'occupancy', row['occupancy'])
-        xml.send(:'occupancypercentage', row['occupancyPercentage'])
+        xml.send(:'occupancy', car_park.occupancy)
+        xml.send(:'capacity', car_park.capacity)
       }
       xml.send(:'address', "")
       xml.send(:'postcode', "")
       xml.send(:'phone', "")
       xml.send(:'email', "")
       xml.send(:'web', "")
-      xml.send(:'displayed_hours', row['Times'])
+      xml.send(:'displayed_hours', "")
       xml.send(:'eligibility_information', "")
     }
   end
@@ -410,9 +414,6 @@ class Open311App < Sinatra::Base
     # as a temp step for now, load all the community contacts
     load_community_contacts
 
-    # as a temp step for now, load all the parking data
-    load_car_parks
-
     # as a temp step for now, load all the schools data
     load_schools
 
@@ -421,8 +422,8 @@ class Open311App < Sinatra::Base
     @community_groups.each do |row|
       valid_facilities << row['Id']
     end
-    @car_parks.each do |row|
-      valid_facilities << row['Id']
+    CarPark.all.each do |row|
+      valid_facilities << row['id_public']
     end
     @schools.each do |row|
       valid_facilities << row['Id']
@@ -449,7 +450,7 @@ class Open311App < Sinatra::Base
             end
           end
           if category.downcase == 'parking' or category == 'all'
-            @car_parks.each do |car_park|
+            CarPark.all.each do |car_park|
               parking_facility_summary(xml, car_park)
             end
           end
@@ -474,8 +475,8 @@ class Open311App < Sinatra::Base
             end
 
           when settings.facility_prefix_car_park
-            @car_parks.each do |check_row|
-              if check_row['Id'] == category
+            CarPark.all.each do |check_row|
+              if check_row.id_public == category
                 parking_facility_detailed(xml, check_row)
                 break
               end
@@ -589,5 +590,10 @@ class Open311App < Sinatra::Base
     end
 
     builder.to_xml
+  end
+
+  get '/load_car_park_data' do
+    load_car_parks
+    redirect '/'
   end
 end
