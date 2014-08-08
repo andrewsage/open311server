@@ -2,7 +2,6 @@ source 'https://rubygems.org'
 
 gem 'thin'
 gem 'sinatra'
-gem "sqlite3"
 gem "activerecord"
 gem "sinatra-activerecord"
 
@@ -29,6 +28,7 @@ group :development do
 end
 
 group :development, :test do
+  gem "sqlite3"
   gem 'growl'
 end
 
