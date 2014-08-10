@@ -43,6 +43,14 @@ describe 'The Open311 App' do
   end
 
   describe 'get facility' do
+    before do
+      @car_park = CarPark.create(:id_public => 'CP02',
+        :name => 'Loch Street Car Park',
+        :lat => 57.149373,
+        :long => -2.1001346,
+        :occupancy => 10)
+    end
+
     it "should be xml" do
       get '/dev/v1/facilities/1.xml'
       expect(last_response['Content-Type']).to start_with('text/xml')
@@ -61,7 +69,7 @@ describe 'The Open311 App' do
     end
 
     it "should have facilities tag" do
-      get '/dev/v1/facilities/CP01.xml'
+      get '/dev/v1/facilities/CP02.xml'
       xml_doc  = Nokogiri::XML(last_response.body)
       expect(xml_doc.xpath('facilities')).not_to be_empty
     end
