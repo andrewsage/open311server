@@ -4,6 +4,14 @@ require "sinatra/activerecord"
 class CarPark < ActiveRecord::Base
 end
 
+class School < ActiveRecord::Base
+  has_many :school_types
+end
+
+class SchoolType < ActiveRecord::Base
+  belongs_to :school
+end
+
 class Open311App < Sinatra::Base
   register Sinatra::ActiveRecordExtension
 
@@ -18,28 +26,47 @@ class Open311App < Sinatra::Base
   # At some future point a database will be used to contain this data
 
   def load_schools
-    @schools = []
 
     data_path = File.expand_path("../../data/schools.json", __FILE__)
     json = JSON.parse(IO.read(data_path))
 
     json.each_with_index do |school_json, index|
-      school = Hash.new
+      school_data = Hash.new
 
-      school['Id'] = "#{settings.facility_prefix_school}#{index + 1}"
-      school['name'] = school_json['school_name']
-      school['address'] = school_json['address']
-      school['post_code'] = school_json['post_code']
-      school['telephone'] = school_json['telephone']
-      school['fax'] = school_json['fax']
-      school['web'] = school_json['web']
-      school['email'] = school_json['email']
-      school['school_type'] = school_json['school_type']
-      school['head_teacher'] = school_json['head_teacher']
-      school['lat'] = school_json['lat']
-      school['long'] = school_json['long']
+      school_data['Id'] = "#{settings.facility_prefix_school}#{index + 1}"
+      school_data['name'] = school_json['school_name']
+      school_data['address'] = school_json['address']
+      school_data['post_code'] = school_json['post_code']
+      school_data['telephone'] = school_json['telephone']
+      school_data['fax'] = school_json['fax']
+      school_data['web'] = school_json['web']
+      school_data['email'] = school_json['email']
+      school_data['school_type'] = school_json['school_type']
+      school_data['head_teacher'] = school_json['head_teacher']
+      school_data['lat'] = school_json['lat']
+      school_data['long'] = school_json['long']
 
-      @schools << school
+      school = School.find_by_id_public(school_data['Id'])
+      if school.nil?
+        school = School.create(:id_public => school_data['Id'])
+      end
+      school.name = school_data['name']
+      school.address = school_data['address']
+      school.post_code = school_data['post_code']
+      school.telephone = school_data['telephone']
+      school.fax = school_data['fax']
+      school.web = school_data['web']
+      school.email = school_data['email']
+      school.school_types.destroy_all
+      school_data['school_type'].each do |type|
+        school.school_types.create(:name => type)
+      end
+
+      #school.school_type = school_data['school_type']
+      school.head_teacher = school_data['head_teacher']
+      school.lat= school_data['lat']
+      school.long = school_data['long']
+      school.save
     end
   end
 
@@ -300,7 +327,7 @@ class Open311App < Sinatra::Base
 
   def school_facility_summary(xml, row)
     xml.send(:'facility') {
-      xml.send(:'id', "#{row['Id']}")
+      xml.send(:'id', "#{row['id_public']}")
       xml.send(:'facility_name', row['name'])
       xml.send(:'expiration', '2099-12-31T23:59:59Z')
       xml.send(:'type', 'School')
@@ -312,7 +339,7 @@ class Open311App < Sinatra::Base
 
   def school_facility_detailed(xml, row)
     xml.send(:'facility') {
-      xml.send(:'id', "#{row['Id']}")
+      xml.send(:'id', "#{row['id_public']}")
       xml.send(:'facility_name', row['name'])
       xml.send(:'expiration', '2099-12-31T23:59:59Z')
       xml.send(:'type', 'School')
@@ -320,8 +347,8 @@ class Open311App < Sinatra::Base
       xml.send(:'lat', row['lat'])
       xml.send(:'long', row['long'])
       xml.send(:'features') {
-        row['school_type'].each do |type|
-          xml.send(:'school_type', type)
+        row.school_types.each do |type|
+          xml.send(:'school_type', type.name)
         end
         xml.send(:'head_teacher', row['head_teacher'])
       }
@@ -414,9 +441,6 @@ class Open311App < Sinatra::Base
     # as a temp step for now, load all the community contacts
     load_community_contacts
 
-    # as a temp step for now, load all the schools data
-    load_schools
-
     # build a list of valid facilities
     valid_facilities = []
     @community_groups.each do |row|
@@ -425,8 +449,8 @@ class Open311App < Sinatra::Base
     CarPark.all.each do |row|
       valid_facilities << row['id_public']
     end
-    @schools.each do |row|
-      valid_facilities << row['Id']
+    School.all.each do |row|
+      valid_facilities << row['id_public']
     end
     if category.nil?
       halt 400, 'facility category was not provided'
@@ -455,7 +479,7 @@ class Open311App < Sinatra::Base
             end
           end
           if category.downcase == 'schools' or category == 'all'
-            @schools.each do |school|
+            School.all.each do |school|
               school_facility_summary(xml, school)
             end
           end
@@ -483,8 +507,8 @@ class Open311App < Sinatra::Base
             end
 
           when settings.facility_prefix_school
-            @schools.each do |check_row|
-                if check_row['Id'] == category
+            School.all.each do |check_row|
+                if check_row.id_public == category
                   school_facility_detailed(xml, check_row)
                   break
                 end
@@ -592,8 +616,14 @@ class Open311App < Sinatra::Base
     builder.to_xml
   end
 
+  # Handle requests to reload the source data
   get '/load_car_park_data' do
     load_car_parks
+    redirect '/'
+  end
+
+  get '/load_school_data' do
+    load_schools
     redirect '/'
   end
 end
