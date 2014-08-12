@@ -27,6 +27,7 @@
 <ul>
   <li><a href="/load_car_park_data">Rebuild Car Park data</a></li>
   <li><a href="/load_school_data">Rebuild School data</a></li>
+  <li><a href="/load_community_centres_data">Rebuild Community Centres data</a></li>
 </ul>
 
 <h2>Get Sub Categories List</h2>
@@ -47,9 +48,9 @@
 
 <ul>
   <li><a href="/dev/v1/facilities/all.xml">/dev/v1/facilities/all.xml</a></li>
-  <li><a href="/dev/v1/facilities/community%20groups.xml">/dev/v1/facilities/community%20groups.xml</a></li>
-  <li><a href="/dev/v1/facilities/parking.xml">/dev/v1/facilities/parking.xml</a> (partial data at present - occupancy information is incorrect)</li>
-  <li><a href="/dev/v1/facilities/schools.xml">/dev/v1/facilities/schools.xml</a> (partial data at present)</li>
+  <li><a href="/dev/v1/facilities/community%20centres.xml">/dev/v1/facilities/community%20centres.xml</a> (<%= CommunityCentre.all.count %>)</li>
+  <li><a href="/dev/v1/facilities/parking.xml">/dev/v1/facilities/parking.xml</a> (partial data at present - occupancy information is incorrect) (<%= CarPark.all.count %>)</li>
+  <li><a href="/dev/v1/facilities/schools.xml">/dev/v1/facilities/schools.xml</a> (partial data at present) (<%= School.all.count %>)</li>
 </ul>
 
 
@@ -58,7 +59,7 @@
 <p>To get the facility detailed information use: http://&lt;content_api_root&gt;/facilities/&lt;facility_id&gt;
 
 <ul>
-  <li><a href="/dev/v1/facilities/CG1432.xml">/dev/v1/facilities/CG1432.xml</a> - a community group</li>
+  <li><a href="/dev/v1/facilities/CG292.xml">/dev/v1/facilities/CG292.xml</a> - a community centre</li>
   <li><a href="/dev/v1/facilities/CP01.xml">/dev/v1/facilities/CP01.xml</a> - a car park</li>
   <li><a href="/dev/v1/facilities/SC2.xml">/dev/v1/facilities/SC2.xml</a> - a school</li>
 </ul>

@@ -8,6 +8,7 @@ gem "sinatra-activerecord"
 gem 'nokogiri'
 gem 'rake'
 gem 'json', '~> 1.8.1'
+gem 'mechanize'
 
 # Deployment related
 gem 'capistrano', '~> 2.15.5'

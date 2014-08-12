@@ -30,6 +30,7 @@
 
     var schools = [];
     var parking = [];
+    var community_centres = [];
     var map = L.map('map');
 
     var streetsLayer = L.tileLayer('http://otile{s}.mqcdn.com/tiles/1.0.0/map/{z}/{x}/{y}.jpeg', {
@@ -47,7 +48,7 @@
     };
 
     info.update = function (props) {
-        this._div.innerHTML = '<h4>Facilities in Aberdeen</h4>';
+        this._div.innerHTML = "<h4>Facilities in Aberdeen</h4>" + schools.length + " schools<br/>" + parking.length + " car parks<br/>" + community_centres.length + " community centres";
     };
 
     info.addTo(map);
@@ -73,6 +74,10 @@
               marker = L.marker(location, {icon: myIcon});
               marker.bindPopup(label).openPopup();
               parking.push(marker);
+            } else if($(this).find('type').text() == "Community Centre") {
+              marker = L.marker(location);
+              marker.bindPopup($(this).find('facility_name').text()).openPopup();
+              community_centres.push(marker);
             } else {
               marker = L.marker(location);
               marker.bindPopup($(this).find('facility_name').text()).openPopup();
@@ -84,9 +89,11 @@
 
         var schoolsLayer = L.layerGroup(schools);
         var parkingLayer = L.layerGroup(parking);
+        var communityCentresLayer = L.layerGroup(community_centres);
 
         schoolsLayer.addTo(map);
         parkingLayer.addTo(map);
+        communityCentresLayer.addTo(map);
 
         var baseMaps = {
           "Streets": streetsLayer
@@ -94,10 +101,13 @@
 
         var overlayMaps = {
           "Schools": schoolsLayer,
-          "Parking": parkingLayer
+          "Parking": parkingLayer,
+          "Community Centres": communityCentresLayer
         };
 
         L.control.layers(baseMaps, overlayMaps).addTo(map);
+        info.update();
+
       }
 
       $.ajax({

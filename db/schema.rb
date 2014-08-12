@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20140810141337) do
+ActiveRecord::Schema.define(version: 20140812083936) do
 
   create_table "car_parks", force: true do |t|
     t.string   "id_public"
@@ -20,6 +20,26 @@ ActiveRecord::Schema.define(version: 20140810141337) do
     t.decimal  "long"
     t.integer  "occupancy"
     t.integer  "capacity"
+    t.datetime "data_updated"
+    t.datetime "created_at"
+    t.datetime "updated_at"
+  end
+
+  create_table "community_centres", force: true do |t|
+    t.string   "id_public"
+    t.string   "name"
+    t.string   "address"
+    t.string   "post_code"
+    t.string   "telephone"
+    t.string   "fax"
+    t.string   "web"
+    t.string   "email"
+    t.text     "brief_description"
+    t.text     "description"
+    t.text     "displayed_hours"
+    t.text     "eligibility_information"
+    t.decimal  "lat"
+    t.decimal  "long"
     t.datetime "data_updated"
     t.datetime "created_at"
     t.datetime "updated_at"

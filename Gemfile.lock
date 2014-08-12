@@ -28,6 +28,8 @@ GEM
     coderay (1.1.0)
     daemons (1.1.9)
     diff-lcs (1.2.5)
+    domain_name (0.5.19)
+      unf (>= 0.0.5, < 1.0.0)
     eventmachine (1.0.3)
     ffi (1.9.3)
     formatador (0.2.5)
@@ -55,6 +57,8 @@ GEM
       guard
       spoon
     highline (1.6.21)
+    http-cookie (1.0.2)
+      domain_name (~> 0.5)
     i18n (0.6.11)
     json (1.8.1)
     libnotify (0.8.3)
@@ -64,9 +68,21 @@ GEM
       rb-fsevent (>= 0.9.3)
       rb-inotify (>= 0.9)
     lumberjack (1.0.7)
+    mechanize (2.7.3)
+      domain_name (~> 0.5, >= 0.5.1)
+      http-cookie (~> 1.0)
+      mime-types (~> 2.0)
+      net-http-digest_auth (~> 1.1, >= 1.1.1)
+      net-http-persistent (~> 2.5, >= 2.5.2)
+      nokogiri (~> 1.4)
+      ntlm-http (~> 0.1, >= 0.1.1)
+      webrobots (>= 0.0.9, < 0.2)
     method_source (0.8.2)
+    mime-types (2.3)
     mini_portile (0.6.0)
     minitest (5.4.0)
+    net-http-digest_auth (1.4)
+    net-http-persistent (2.9.4)
     net-scp (1.2.1)
       net-ssh (>= 2.6.5)
     net-sftp (2.1.2)
@@ -76,6 +92,7 @@ GEM
       net-ssh (>= 2.6.5)
     nokogiri (1.6.2.1)
       mini_portile (= 0.6.0)
+    ntlm-http (0.1.1)
     pg (0.17.1)
     pry (0.10.0)
       coderay (~> 1.1.0)
@@ -138,6 +155,10 @@ GEM
       sinatra (>= 1.2.1)
     tzinfo (1.2.1)
       thread_safe (~> 0.1)
+    unf (0.1.4)
+      unf_ext
+    unf_ext (0.0.6)
+    webrobots (0.1.1)
 
 PLATFORMS
   ruby
@@ -152,6 +173,7 @@ DEPENDENCIES
   guard-rspec
   guard-shotgun
   json (~> 1.8.1)
+  mechanize
   net-ssh (= 2.7.0)
   nokogiri
   pg

@@ -1,4 +1,5 @@
 require 'json'
+require 'mechanize'
 require "sinatra/activerecord"
 
 class CarPark < ActiveRecord::Base
@@ -10,6 +11,9 @@ end
 
 class SchoolType < ActiveRecord::Base
   belongs_to :school
+end
+
+class CommunityCentre < ActiveRecord::Base
 end
 
 class Open311App < Sinatra::Base
@@ -116,6 +120,40 @@ class Open311App < Sinatra::Base
       if car_park
         car_park.occupancy = occupancy
         car_park.save
+      end
+    end
+  end
+
+  def load_community_centres
+
+    load_community_contacts
+    agent = Mechanize.new
+
+    @community_groups.each do |row|
+      if row['SubCategory'] == 'Community Centres'
+        community_centre = CommunityCentre.find_by_id_public(row['Id'])
+        if community_centre.nil?
+          community_centre = CommunityCentre.create(:id_public => row['Id'])
+        end
+        community_centre.name = row['ItemTitle']
+        community_centre.address = "#{row['FirstAddressOne']}, #{row['FirstAddressTwo']}, #{row['FirstAddressThree']}, #{row['FirstAddressFour']}"
+        community_centre.post_code = row['FirstPost']
+        community_centre.telephone = row['FirstPhone']
+        community_centre.fax = row['FirstFax']
+        community_centre.web = row['WebOne']
+        community_centre.email = row['FirstEmail']
+        community_centre.brief_description = row['Other']
+        community_centre.description = row['Other'] + row['OtherTwo']
+        community_centre.displayed_hours = row['Times'] + row['TimesTwo']
+        community_centre.eligibility_information = row['Restricted']
+
+        json = JSON.parse(agent.get("http://nominatim.openstreetmap.org/search.php?q=#{URI::encode(community_centre.address)}&format=json").body)
+        if json.first
+          community_centre.lat = json.first['lat']
+          community_centre.long = json.first['lon']
+        end
+
+        community_centre.save
       end
     end
   end
@@ -325,6 +363,40 @@ class Open311App < Sinatra::Base
     }
   end
 
+  def community_centre_facility_summary(xml, row)
+    xml.send(:'facility') {
+      xml.send(:'id', "#{row['id_public']}")
+      xml.send(:'facility_name', row['name'])
+      xml.send(:'expiration', '2099-12-31T23:59:59Z')
+      xml.send(:'type', 'Community Centre')
+      xml.send(:'brief_description', row.brief_description)
+      xml.send(:'lat', row['lat'])
+      xml.send(:'long', row['long'])
+    }
+  end
+
+  def community_centre_facility_detailed(xml, row)
+    xml.send(:'facility') {
+      xml.send(:'id', "#{row['id_public']}")
+      xml.send(:'facility_name', row['name'])
+      xml.send(:'expiration', '2099-12-31T23:59:59Z')
+      xml.send(:'type', 'Community Centre')
+      xml.send(:'brief_description', row.brief_description)
+      xml.send(:'description', row.description)
+      xml.send(:'lat', row['lat'])
+      xml.send(:'long', row['long'])
+      xml.send(:'features') {
+      }
+      xml.send(:'address', row['address'])
+      xml.send(:'postcode', row['post_code'])
+      xml.send(:'phone', row['telephone'])
+      xml.send(:'email', row['email'])
+      xml.send(:'web', row['web'])
+      xml.send(:'displayed_hours', row.displayed_hours)
+      xml.send(:'eligibility_information', row.eligibility_information)
+    }
+  end
+
   def school_facility_summary(xml, row)
     xml.send(:'facility') {
       xml.send(:'id', "#{row['id_public']}")
@@ -438,13 +510,10 @@ class Open311App < Sinatra::Base
 
     content_type 'text/xml'
 
-    # as a temp step for now, load all the community contacts
-    load_community_contacts
-
     # build a list of valid facilities
     valid_facilities = []
-    @community_groups.each do |row|
-      valid_facilities << row['Id']
+    CommunityCentre.all.each do |row|
+      valid_facilities << row['id_public']
     end
     CarPark.all.each do |row|
       valid_facilities << row['id_public']
@@ -456,7 +525,7 @@ class Open311App < Sinatra::Base
       halt 400, 'facility category was not provided'
     end
 
-    valid_categories = ['all', 'community groups', 'parking', 'schools']
+    valid_categories = ['all', 'community centres', 'parking', 'schools']
     if valid_categories.include?(category) == false and valid_facilities.include?(category) == false
       halt 404, "facility category provided was not found: #{category}"
     end
@@ -468,9 +537,9 @@ class Open311App < Sinatra::Base
         # or are we looking for a specific facility?
 
         if valid_categories.include?(category)
-          if category.downcase == 'community groups' or category == 'all'
-            @community_groups.each do |row|
-              community_facility_summary(xml, row)
+          if category.downcase == 'community centres' or category == 'all'
+            CommunityCentre.all.each do |community_centre|
+              community_centre_facility_summary(xml, community_centre)
             end
           end
           if category.downcase == 'parking' or category == 'all'
@@ -491,9 +560,9 @@ class Open311App < Sinatra::Base
 
           case category[0, 2]
           when settings.facility_prefix_community_group
-            @community_groups.each do |check_row|
-              if check_row['Id'] == category
-                community_facility_detailed(xml, check_row)
+            CommunityCentre.all.each do |check_row|
+              if check_row.id_public == category
+                community_centre_facility_detailed(xml, check_row)
                 break
               end
             end
@@ -624,6 +693,11 @@ class Open311App < Sinatra::Base
 
   get '/load_school_data' do
     load_schools
+    redirect '/'
+  end
+
+  get '/load_community_centres_data' do
+    load_community_centres
     redirect '/'
   end
 end
