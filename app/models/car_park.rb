@@ -1,8 +1,49 @@
 class CarPark < ActiveRecord::Base
 
+  def summary_json
+    json = {
+      :id => self.id_public,
+      :facility_name => self.name,
+      :expiration => '2099-12-31T23:59:59Z',
+      :updated => Time.now.utc.strftime("%Y-%m-%dT%H:%M:%SZ"),
+      :type => 'Parking',
+      :lat => self.lat,
+      :long => self.long,
+      :features => {
+        :occupancy => self.occupancy,
+        :capacity => self.capacity
+      }
+    }
+    json
+  end
+
+  def detailed_json
+    json = {
+      :id => self.id_public,
+      :facility_name => self.name,
+      :expiration => '2099-12-31T23:59:59Z',
+      :updated => Time.now.utc.strftime("%Y-%m-%dT%H:%M:%SZ"),
+      :type => 'Parking',
+      :lat => self.lat,
+      :long => self.long,
+      :features => {
+        :occupancy => self.occupancy,
+        :capacity => self.capacity
+      },
+      :address => "",
+      :postcode => "",
+      :phone => "",
+      :email => "",
+      :web => "",
+      :displayed_hours => "",
+      :eligibility_information => ""
+    }
+    json
+  end
+
   def summary_xml(xml)
     xml.send(:'facility') {
-      xml.send(:'id', "#{self.id_public}")
+      xml.send(:'id', self.id_public)
       xml.send(:'facility_name', self.name)
       xml.send(:'expiration', '2099-12-31T23:59:59Z')
       xml.send(:'updated', Time.now.utc.strftime("%Y-%m-%dT%H:%M:%SZ"))
@@ -19,7 +60,7 @@ class CarPark < ActiveRecord::Base
 
   def detailed_xml(xml)
     xml.send(:'facility') {
-      xml.send(:'id', "#{self.id_public}")
+      xml.send(:'id', self.id_public)
       xml.send(:'facility_name', self.name)
       xml.send(:'expiration', '2099-12-31T23:59:59Z')
       xml.send(:'updated', Time.now.utc.strftime("%Y-%m-%dT%H:%M:%SZ"))

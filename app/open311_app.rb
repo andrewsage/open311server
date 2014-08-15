@@ -1,9 +1,11 @@
 require 'json'
 require 'mechanize'
 require "sinatra/activerecord"
+require 'sinatra/contrib'
 
 class Open311App < Sinatra::Base
   register Sinatra::ActiveRecordExtension
+  register Sinatra::Contrib
 
   set :database_file, '../config/database.yml'
   set :services_api_root, '/dev/v2'
@@ -11,6 +13,13 @@ class Open311App < Sinatra::Base
   set :facility_prefix_community_group, 'CG'
   set :facility_prefix_car_park, 'CP'
   set :facility_prefix_school, 'SC'
+
+  before /.*/ do
+    if request.url.match(/.json$/)
+      request.accept.unshift('application/json')
+      request.path_info = request.path_info.gsub(/.json$/,'')
+    end
+  end
 
   # The following are temporary data loading routines for development
   # At some future point a database will be used to contain this data
@@ -379,11 +388,12 @@ class Open311App < Sinatra::Base
 
 
   # http://localhost:4567/dev/v1/facilities/all.xml
-  get "#{settings.facilities_api_root}/facilities/*" do
+  get "#{settings.facilities_api_root}/facilities/*", :provides => [:xml, :json] do
     path = params[:splat].first
     category = path.split('.').first
 
-    content_type 'text/xml'
+
+    #content_type 'text/xml'
 
     # build a list of valid facilities
     valid_facilities = []
@@ -405,65 +415,122 @@ class Open311App < Sinatra::Base
       halt 404, "facility category provided was not found: #{category}"
     end
 
-    builder = Nokogiri::XML::Builder.new do |xml|
-      xml.send(:'facilities') {
+    respond_to do |f|
+      f.json {
+        objects = []
 
-        # Are we looking for category summary facilities
-        # or are we looking for a specific facility?
+            # Are we looking for category summary facilities
+            # or are we looking for a specific facility?
 
-        if valid_categories.include?(category)
-          if category.downcase == 'community centres' or category == 'all'
-            CommunityCentre.all.each do |community_centre|
-              community_centre.summary_xml(xml)
-            end
-          end
-          if category.downcase == 'parking' or category == 'all'
-            CarPark.all.each do |car_park|
-              car_park.summary_xml(xml)
-            end
-          end
-          if category.downcase == 'schools' or category == 'all'
-            School.all.each do |school|
-              school.summary_xml(xml)
-            end
-          end
-        end
-
-        if valid_facilities.include?(category)
-
-          row = nil
-
-          case category[0, 2]
-          when settings.facility_prefix_community_group
-            CommunityCentre.all.each do |community_centre|
-              if community_centre.id_public == category
-                community_centre.detailed_xml(xml)
-                break
-              end
-            end
-
-          when settings.facility_prefix_car_park
-            CarPark.all.each do |car_park|
-              if car_park.id_public == category
-                car_park.detailed_xml(xml)
-                break
-              end
-            end
-
-          when settings.facility_prefix_school
-            School.all.each do |school|
-                if school.id_public == category
-                  school.detailed_xml(xml)
-                  break
+            if valid_categories.include?(category)
+              if category.downcase == 'community centres' or category == 'all'
+                CommunityCentre.all.each do |community_centre|
+                  objects << community_centre.summary_json
                 end
               end
-          else
-          end
+              if category.downcase == 'parking' or category == 'all'
+                CarPark.all.each do |car_park|
+                  objects << car_park.summary_json
+                end
+              end
+              if category.downcase == 'schools' or category == 'all'
+                School.all.each do |school|
+                  objects << school.summary_json
+                end
+              end
+            end
+
+            if valid_facilities.include?(category)
+              case category[0, 2]
+              when settings.facility_prefix_community_group
+                CommunityCentre.all.each do |community_centre|
+                  if community_centre.id_public == category
+                    objects = community_centre.detailed_json
+                    break
+                  end
+                end
+
+              when settings.facility_prefix_car_park
+                CarPark.all.each do |car_park|
+                  if car_park.id_public == category
+                    objects = car_park.detailed_json
+                    break
+                  end
+                end
+
+              when settings.facility_prefix_school
+                School.all.each do |school|
+                    if school.id_public == category
+                      objects = school.detailed_json
+                      break
+                    end
+                  end
+              else
+              end
+            end
+
+            objects.to_json
+       }
+      f.xml {
+        puts 'XML'
+        builder = Nokogiri::XML::Builder.new do |xml|
+          xml.send(:'facilities') {
+
+            # Are we looking for category summary facilities
+            # or are we looking for a specific facility?
+
+            if valid_categories.include?(category)
+              if category.downcase == 'community centres' or category == 'all'
+                CommunityCentre.all.each do |community_centre|
+                  community_centre.summary_xml(xml)
+                end
+              end
+              if category.downcase == 'parking' or category == 'all'
+                CarPark.all.each do |car_park|
+                  car_park.summary_xml(xml)
+                end
+              end
+              if category.downcase == 'schools' or category == 'all'
+                School.all.each do |school|
+                  school.summary_xml(xml)
+                end
+              end
+            end
+
+            if valid_facilities.include?(category)
+              case category[0, 2]
+              when settings.facility_prefix_community_group
+                CommunityCentre.all.each do |community_centre|
+                  if community_centre.id_public == category
+                    community_centre.detailed_xml(xml)
+                    break
+                  end
+                end
+
+              when settings.facility_prefix_car_park
+                CarPark.all.each do |car_park|
+                  if car_park.id_public == category
+                    car_park.detailed_xml(xml)
+                    break
+                  end
+                end
+
+              when settings.facility_prefix_school
+                School.all.each do |school|
+                    if school.id_public == category
+                      school.detailed_xml(xml)
+                      break
+                    end
+                  end
+              else
+              end
+            end
+          }
         end
+
+        builder.to_xml
       }
     end
-
-    builder.to_xml
   end
 
   # http://localhost:4567/dev/v2/services.xml

@@ -43,9 +43,10 @@
 <h2>Get Facilities List</h2>
 
 <p>
-  To get a list of the facilities use: http://&lt;content_api_root&gt;/facilities/&lt;category/&gt;.xml
+  To get a list of the facilities use: http://&lt;content_api_root&gt;/facilities/&lt;category/&gt;.format
 <p>
 
+<h3>XML</h3>
 <ul>
   <li><a href="/dev/v1/facilities/all.xml">/dev/v1/facilities/all.xml</a></li>
   <li><a href="/dev/v1/facilities/community%20centres.xml">/dev/v1/facilities/community%20centres.xml</a> (<%= CommunityCentre.all.count %>)</li>
@@ -53,13 +54,29 @@
   <li><a href="/dev/v1/facilities/schools.xml">/dev/v1/facilities/schools.xml</a> (partial data at present) (<%= School.all.count %>)</li>
 </ul>
 
+<h3>JSON</h3>
+<ul>
+  <li><a href="/dev/v1/facilities/all.json">/dev/v1/facilities/all.json</a></li>
+  <li><a href="/dev/v1/facilities/community%20centres.json">/dev/v1/facilities/community%20centres.json</a> (<%= CommunityCentre.all.count %>)</li>
+  <li><a href="/dev/v1/facilities/parking.json">/dev/v1/facilities/parking.json</a> (partial data at present - occupancy information is incorrect) (<%= CarPark.all.count %>)</li>
+  <li><a href="/dev/v1/facilities/schools.json">/dev/v1/facilities/schools.json</a> (partial data at present) (<%= School.all.count %>)</li>
+</ul>
+
 
 
 <h2>Get Facility Details</h2>
-<p>To get the facility detailed information use: http://&lt;content_api_root&gt;/facilities/&lt;facility_id&gt;
+<p>To get the facility detailed information use: http://&lt;content_api_root&gt;/facilities/&lt;facility_id&gt.format;
 
+<h3>XML</h3>
 <ul>
   <li><a href="/dev/v1/facilities/CG292.xml">/dev/v1/facilities/CG292.xml</a> - a community centre</li>
   <li><a href="/dev/v1/facilities/CP01.xml">/dev/v1/facilities/CP01.xml</a> - a car park</li>
   <li><a href="/dev/v1/facilities/SC2.xml">/dev/v1/facilities/SC2.xml</a> - a school</li>
+</ul>
+
+<h3>JSON</h3>
+<ul>
+  <li><a href="/dev/v1/facilities/CG292.json">/dev/v1/facilities/CG292.json</a> - a community centre</li>
+  <li><a href="/dev/v1/facilities/CP01.json">/dev/v1/facilities/CP01.json</a> - a car park</li>
+  <li><a href="/dev/v1/facilities/SC2.json">/dev/v1/facilities/SC2.json</a> - a school</li>
 </ul>
