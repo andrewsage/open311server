@@ -91,6 +91,39 @@ class SchoolType < ActiveRecord::Base
 end
 
 class CommunityCentre < ActiveRecord::Base
+  def summary_xml(xml)
+    xml.send(:'facility') {
+      xml.send(:'id', self.id_public)
+      xml.send(:'facility_name', self.name)
+      xml.send(:'expiration', '2099-12-31T23:59:59Z')
+      xml.send(:'type', 'Community Centre')
+      xml.send(:'brief_description', self.brief_description)
+      xml.send(:'lat', self.lat)
+      xml.send(:'long', self.long)
+    }
+  end
+
+  def detailed_xml(xml)
+    xml.send(:'facility') {
+      xml.send(:'id', self.id_public)
+      xml.send(:'facility_name', self.name)
+      xml.send(:'expiration', '2099-12-31T23:59:59Z')
+      xml.send(:'type', 'Community Centre')
+      xml.send(:'brief_description', self.brief_description)
+      xml.send(:'description', self.description)
+      xml.send(:'lat', self.lat)
+      xml.send(:'long', self.long)
+      xml.send(:'features') {
+      }
+      xml.send(:'address', self.address)
+      xml.send(:'postcode', self.post_code)
+      xml.send(:'phone', self.telephone)
+      xml.send(:'email', self.email)
+      xml.send(:'web', self.web)
+      xml.send(:'displayed_hours', self.displayed_hours)
+      xml.send(:'eligibility_information', self.eligibility_information)
+    }
+  end
 end
 
 class Open311App < Sinatra::Base
@@ -399,44 +432,6 @@ class Open311App < Sinatra::Base
     }
   end
 
-  def community_centre_facility_summary(xml, row)
-    xml.send(:'facility') {
-      xml.send(:'id', "#{row['id_public']}")
-      xml.send(:'facility_name', row['name'])
-      xml.send(:'expiration', '2099-12-31T23:59:59Z')
-      xml.send(:'type', 'Community Centre')
-      xml.send(:'brief_description', row.brief_description)
-      xml.send(:'lat', row['lat'])
-      xml.send(:'long', row['long'])
-    }
-  end
-
-  def community_centre_facility_detailed(xml, row)
-    xml.send(:'facility') {
-      xml.send(:'id', "#{row['id_public']}")
-      xml.send(:'facility_name', row['name'])
-      xml.send(:'expiration', '2099-12-31T23:59:59Z')
-      xml.send(:'type', 'Community Centre')
-      xml.send(:'brief_description', row.brief_description)
-      xml.send(:'description', row.description)
-      xml.send(:'lat', row['lat'])
-      xml.send(:'long', row['long'])
-      xml.send(:'features') {
-      }
-      xml.send(:'address', row['address'])
-      xml.send(:'postcode', row['post_code'])
-      xml.send(:'phone', row['telephone'])
-      xml.send(:'email', row['email'])
-      xml.send(:'web', row['web'])
-      xml.send(:'displayed_hours', row.displayed_hours)
-      xml.send(:'eligibility_information', row.eligibility_information)
-    }
-  end
-
-
-
-
-
   def valid_jurisdiction?(jurisdiction_id)
     valid = true
 
@@ -543,7 +538,7 @@ class Open311App < Sinatra::Base
         if valid_categories.include?(category)
           if category.downcase == 'community centres' or category == 'all'
             CommunityCentre.all.each do |community_centre|
-              community_centre_facility_summary(xml, community_centre)
+              community_centre.summary_xml(xml)
             end
           end
           if category.downcase == 'parking' or category == 'all'
@@ -564,9 +559,9 @@ class Open311App < Sinatra::Base
 
           case category[0, 2]
           when settings.facility_prefix_community_group
-            CommunityCentre.all.each do |check_row|
-              if check_row.id_public == category
-                community_centre_facility_detailed(xml, check_row)
+            CommunityCentre.all.each do |community_centre|
+              if community_centre.id_public == category
+                community_centre.detailed_xml(xml)
                 break
               end
             end
