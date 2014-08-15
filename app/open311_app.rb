@@ -7,6 +7,42 @@ end
 
 class School < ActiveRecord::Base
   has_many :school_types
+
+  def summary_xml(xml)
+    xml.send(:'facility') {
+      xml.send(:'id', self.id_public)
+      xml.send(:'facility_name', self.name)
+      xml.send(:'expiration', '2099-12-31T23:59:59Z')
+      xml.send(:'type', 'School')
+      xml.send(:'brief_description', self.name)
+      xml.send(:'lat', self.lat)
+      xml.send(:'long', self.long)
+    }
+  end
+
+  def detailed_xml(xml)
+    xml.send(:'facility') {
+      xml.send(:'id', self.id_public)
+      xml.send(:'facility_name', self.name)
+      xml.send(:'expiration', '2099-12-31T23:59:59Z')
+      xml.send(:'type', 'School')
+      xml.send(:'brief_description', self.name)
+      xml.send(:'lat', self.lat)
+      xml.send(:'long', self.long)
+      xml.send(:'features') {
+        school_types.each do |type|
+          xml.send(:'school_type', type.name)
+        end
+        xml.send(:'head_teacher', self.head_teacher)
+      }
+      xml.send(:'address', self.address)
+      xml.send(:'postcode', self.post_code)
+      xml.send(:'phone', self.telephone)
+      xml.send(:'email', self.email)
+      xml.send(:'web', self.web)
+      xml.send(:'eligibility_information', "")
+    }
+  end
 end
 
 class SchoolType < ActiveRecord::Base
@@ -397,41 +433,9 @@ class Open311App < Sinatra::Base
     }
   end
 
-  def school_facility_summary(xml, row)
-    xml.send(:'facility') {
-      xml.send(:'id', "#{row['id_public']}")
-      xml.send(:'facility_name', row['name'])
-      xml.send(:'expiration', '2099-12-31T23:59:59Z')
-      xml.send(:'type', 'School')
-      xml.send(:'brief_description', row['name'])
-      xml.send(:'lat', row['lat'])
-      xml.send(:'long', row['long'])
-    }
-  end
 
-  def school_facility_detailed(xml, row)
-    xml.send(:'facility') {
-      xml.send(:'id', "#{row['id_public']}")
-      xml.send(:'facility_name', row['name'])
-      xml.send(:'expiration', '2099-12-31T23:59:59Z')
-      xml.send(:'type', 'School')
-      xml.send(:'brief_description', row['name'])
-      xml.send(:'lat', row['lat'])
-      xml.send(:'long', row['long'])
-      xml.send(:'features') {
-        row.school_types.each do |type|
-          xml.send(:'school_type', type.name)
-        end
-        xml.send(:'head_teacher', row['head_teacher'])
-      }
-      xml.send(:'address', row['address'])
-      xml.send(:'postcode', row['post_code'])
-      xml.send(:'phone', row['telephone'])
-      xml.send(:'email', row['email'])
-      xml.send(:'web', row['web'])
-      xml.send(:'eligibility_information', "")
-    }
-  end
+
+
 
   def valid_jurisdiction?(jurisdiction_id)
     valid = true
@@ -549,7 +553,7 @@ class Open311App < Sinatra::Base
           end
           if category.downcase == 'schools' or category == 'all'
             School.all.each do |school|
-              school_facility_summary(xml, school)
+              school.summary_xml(xml)
             end
           end
         end
@@ -576,9 +580,9 @@ class Open311App < Sinatra::Base
             end
 
           when settings.facility_prefix_school
-            School.all.each do |check_row|
-                if check_row.id_public == category
-                  school_facility_detailed(xml, check_row)
+            School.all.each do |school|
+                if school.id_public == category
+                  school.detailed_xml(xml)
                   break
                 end
               end
