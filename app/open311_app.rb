@@ -3,6 +3,47 @@ require 'mechanize'
 require "sinatra/activerecord"
 
 class CarPark < ActiveRecord::Base
+
+  def summary_xml(xml)
+    xml.send(:'facility') {
+      xml.send(:'id', "#{self.id_public}")
+      xml.send(:'facility_name', self.name)
+      xml.send(:'expiration', '2099-12-31T23:59:59Z')
+      xml.send(:'updated', Time.now.utc.strftime("%Y-%m-%dT%H:%M:%SZ"))
+      xml.send(:'type', 'Parking')
+      xml.send(:'brief_description', self.name)
+      xml.send(:'lat', self.lat)
+      xml.send(:'long', self.long)
+      xml.send(:'features') {
+        xml.send(:'occupancy', self.occupancy)
+        xml.send(:'capacity', self.capacity)
+      }
+    }
+  end
+
+  def detailed_xml(xml)
+    xml.send(:'facility') {
+      xml.send(:'id', "#{self.id_public}")
+      xml.send(:'facility_name', self.name)
+      xml.send(:'expiration', '2099-12-31T23:59:59Z')
+      xml.send(:'updated', Time.now.utc.strftime("%Y-%m-%dT%H:%M:%SZ"))
+      xml.send(:'type', 'Parking')
+      xml.send(:'brief_description', self.name)
+      xml.send(:'lat', self.lat)
+      xml.send(:'long', self.long)
+      xml.send(:'features') {
+        xml.send(:'occupancy', self.occupancy)
+        xml.send(:'capacity', self.capacity)
+      }
+      xml.send(:'address', "")
+      xml.send(:'postcode', "")
+      xml.send(:'phone', "")
+      xml.send(:'email', "")
+      xml.send(:'web', "")
+      xml.send(:'displayed_hours', "")
+      xml.send(:'eligibility_information', "")
+    }
+  end
 end
 
 class School < ActiveRecord::Base
@@ -358,47 +399,6 @@ class Open311App < Sinatra::Base
     }
   end
 
-  def parking_facility_summary(xml, car_park)
-    xml.send(:'facility') {
-      xml.send(:'id', "#{car_park.id_public}")
-      xml.send(:'facility_name', car_park.name)
-      xml.send(:'expiration', '2099-12-31T23:59:59Z')
-      xml.send(:'updated', Time.now.utc.strftime("%Y-%m-%dT%H:%M:%SZ"))
-      xml.send(:'type', 'Parking')
-      xml.send(:'brief_description', car_park.name)
-      xml.send(:'lat', car_park.lat)
-      xml.send(:'long', car_park.long)
-      xml.send(:'features') {
-        xml.send(:'occupancy', car_park.occupancy)
-        xml.send(:'capacity', car_park.capacity)
-      }
-    }
-  end
-
-  def parking_facility_detailed(xml, car_park)
-    xml.send(:'facility') {
-      xml.send(:'id', "#{car_park.id_public}")
-      xml.send(:'facility_name', car_park.name)
-      xml.send(:'expiration', '2099-12-31T23:59:59Z')
-      xml.send(:'updated', Time.now.utc.strftime("%Y-%m-%dT%H:%M:%SZ"))
-      xml.send(:'type', 'Parking')
-      xml.send(:'brief_description', car_park.name)
-      xml.send(:'lat', car_park.lat)
-      xml.send(:'long', car_park.long)
-      xml.send(:'features') {
-        xml.send(:'occupancy', car_park.occupancy)
-        xml.send(:'capacity', car_park.capacity)
-      }
-      xml.send(:'address', "")
-      xml.send(:'postcode', "")
-      xml.send(:'phone', "")
-      xml.send(:'email', "")
-      xml.send(:'web', "")
-      xml.send(:'displayed_hours', "")
-      xml.send(:'eligibility_information', "")
-    }
-  end
-
   def community_centre_facility_summary(xml, row)
     xml.send(:'facility') {
       xml.send(:'id', "#{row['id_public']}")
@@ -548,7 +548,7 @@ class Open311App < Sinatra::Base
           end
           if category.downcase == 'parking' or category == 'all'
             CarPark.all.each do |car_park|
-              parking_facility_summary(xml, car_park)
+              car_park.summary_xml(xml)
             end
           end
           if category.downcase == 'schools' or category == 'all'
@@ -572,9 +572,9 @@ class Open311App < Sinatra::Base
             end
 
           when settings.facility_prefix_car_park
-            CarPark.all.each do |check_row|
-              if check_row.id_public == category
-                parking_facility_detailed(xml, check_row)
+            CarPark.all.each do |car_park|
+              if car_park.id_public == category
+                car_park.detailed_xml(xml)
                 break
               end
             end
