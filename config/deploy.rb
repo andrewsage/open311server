@@ -38,6 +38,7 @@ default_run_options[:pty] = true
 after "deploy:restart", "deploy:cleanup"
 
 
+
 # After an initial (cold) deploy, symlink the app and restart nginx
 after "deploy:cold" do
   admin.nginx_restart
@@ -48,4 +49,16 @@ namespace :deploy do
   desc "Not starting as we're running passenger."
   task :start do
   end
+
+  task :setup_config, roles: :app do
+    run "mkdir -p #{shared_path}/config"
+    put File.read("config/database.example.yml"), "#{shared_path}/config/database.yml"
+    puts "Now edit the config files in #{shared_path}."
+  end
+  after "deploy:setup", "deploy:setup_config"
+
+  task :symlink_config, roles: :app do
+    run "ln -nfs #{shared_path}/config/database.yml #{release_path}/config/database.yml"
+  end
+  after "deploy:finalize_update", "deploy:symlink_config"
 end
