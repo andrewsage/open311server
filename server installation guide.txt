@@ -1,0 +1,71 @@
+Installing the production hosting environment on Ubuntu 12.04
+
+sudo apt-get update
+sudo apt-get install curl
+curl -L get.rvm.io | bash -s stable
+source ~/.rvm/scripts/rvm
+rvm requirements
+rvm install 2.1.2
+rvm use 2.1.2 --default
+ruby -v
+rvm rubygems current
+gem install passenger
+
+Enable extra swap space if memory is less than 1024 MB
+
+sudo apt-get install libcurl4-openssl-dev
+sudo dd if=/dev/zero of=/swap bs=1M count=1024
+sudo mkswap /swap
+sudo swapon /swap
+rvmsudo passenger-install-nginx-module
+
+sudo nano /opt/nginx/conf/nginx.conf
+<TODO - add the changes to the config file to enable the app to run>
+
+Install Postgres
+sudo apt-get update
+sudo apt-get -y install python-software-properties
+wget --quiet -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc | sudo apt-key add -
+sudo sh -c 'echo "deb http://apt.postgresql.org/pub/repos/apt/ precise-pgdg main" >> /etc/apt/sources.list.d/postgresql.list'
+sudo apt-get update
+sudo apt-get install postgresql-9.3 pgadmin3
+
+
+Enable nginx as a service
+
+wget -O init-deb.sh http://library.linode.com/assets/660-init-deb.sh
+sudo mv init-deb.sh /etc/init.d/nginx
+sudo chmod +x /etc/init.d/nginx
+sudo /usr/sbin/update-rc.d -f nginx defaults
+sudo service nginx start
+
+Do the following to check that postgres has installed
+locate postgresql
+psql -V
+
+Create the database user that the app will be using
+sudo su - postgres
+createuser --pwprompt open311
+
+Ctrl+D to log out of the postgres user account
+
+After creating the database user you need to give them database creation access rights:
+
+sudo -u postgres psql
+ALTER ROLE open311 WITH CREATEDB;
+
+Install Git
+
+sudo apt install git
+sudo apt-get install git
+git --version
+
+sudo service nginx restart
+
+Set up the environment variable to store the database password
+
+export OPEN311SERVER_DATABASE_PASSWORD='xxxx'
+echo $OPEN311SERVER_DATABASE_PASSWORD
+
+The following is required for the Postgres pg gemfile
+sudo apt-get install libpq-dev
