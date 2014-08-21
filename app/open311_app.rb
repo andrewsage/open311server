@@ -392,9 +392,6 @@ class Open311App < Sinatra::Base
     path = params[:splat].first
     category = path.split('.').first
 
-
-    #content_type 'text/xml'
-
     # build a list of valid facilities
     valid_facilities = []
     CommunityCentre.all.each do |row|
@@ -472,7 +469,6 @@ class Open311App < Sinatra::Base
             objects.to_json
        }
       f.xml {
-        puts 'XML'
         builder = Nokogiri::XML::Builder.new do |xml|
           xml.send(:'facilities') {
 

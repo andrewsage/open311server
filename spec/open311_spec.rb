@@ -6,9 +6,14 @@ describe 'The Open311 App' do
   end
 
   describe 'lists facilities' do
-    it "should be xml" do
+    it "should be xml for .xml" do
       get '/dev/v1/facilities/all.xml'
-      expect(last_response['Content-Type']).to start_with('text/xml')
+      expect(last_response['Content-Type']).to start_with('application/xml')
+    end
+
+    it "should be json for .json" do
+      get '/dev/v1/facilities/all.json'
+      expect(last_response['Content-Type']).to start_with('application/json')
     end
 
     it "should return 400 for no category" do
@@ -51,9 +56,14 @@ describe 'The Open311 App' do
         :occupancy => 10)
     end
 
-    it "should be xml" do
+    it "should be xml for .xml" do
       get '/dev/v1/facilities/1.xml'
-      expect(last_response['Content-Type']).to start_with('text/xml')
+      expect(last_response['Content-Type']).to start_with('application/xml')
+    end
+
+    it "should be json for .json" do
+      get '/dev/v1/facilities/1.json'
+      expect(last_response['Content-Type']).to start_with('application/json')
     end
 
     it "should return 400 for no facility_id" do
@@ -255,22 +265,6 @@ describe 'The Open311 App' do
 
         attributes_xml.xpath("//attribute").each do |attribute_xml|
           expect(valid_values).to include(attribute_xml.xpath('required').text)
-        end
-      end
-    end
-
-    xit "each attribute's values should have unique keys" do
-      get '/dev/v2/services/001.xml'
-      xml_doc  = Nokogiri::XML(last_response.body)
-      attributes_xml = xml_doc.xpath('service_definition/attributes')
-
-      attributes_xml.xpath("attribute").each do |attribute_xml|
-        keys_used = []
-        values_xml = attribute_xml.xpath('values')
-        values_xml.xpath("value").each do |value_xml|
-          key = value_xml.xpath('key').text
-          expect(keys_used).not_to include(key)
-          keys_used << key
         end
       end
     end
