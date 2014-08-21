@@ -48,8 +48,10 @@ end
 
 # As this isn't a rails app, we don't start and stop the app invidually
 namespace :deploy do
-  desc "Not starting as we're running passenger."
-  task :start do
+  task :start do ; end
+  task :stop do ; end
+  task :restart, roles: :app, except: { no_release: true } do
+    run "#{try_sudo} touch #{File.join(current_path,'tmp','restart.txt')}"
   end
 
   task :setup_config, roles: :app do
@@ -78,7 +80,7 @@ namespace :deploy do
 
   def run_remote_rake(rake_cmd)
     rake_args = ENV['RAKE_ARGS'].to_s.split(',')
-    cmd = "cd #{fetch(:latest_release)} && #{fetch(:rake, "rake")} RAILS_ENV=#{fetch(:rails_env, "production")} #{rake_cmd}"
+    cmd = "cd #{fetch(:latest_release)} && #{fetch(:rake, "rake")} RACK_ENV=#{fetch(:rack_env, "production")} #{rake_cmd}"
     cmd += "['#{rake_args.join("','")}']" unless rake_args.empty?
     run cmd
     set :rakefile, nil if exists?(:rakefile)
