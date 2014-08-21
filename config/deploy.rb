@@ -61,4 +61,20 @@ namespace :deploy do
     run "ln -nfs #{shared_path}/config/database.yml #{release_path}/config/database.yml"
   end
   after "deploy:finalize_update", "deploy:symlink_config"
+
+  task :create_database, roles: :app do
+    run_remote_rake "db:create"
+  end
+
+  task :migrate, roles: :app do
+    run_remote_rake "db:migrate"
+  end
+
+  def run_remote_rake(rake_cmd)
+    rake_args = ENV['RAKE_ARGS'].to_s.split(',')
+    cmd = "cd #{fetch(:latest_release)} && #{fetch(:rake, "rake")} RAILS_ENV=#{fetch(:rails_env, "production")} #{rake_cmd}"
+    cmd += "['#{rake_args.join("','")}']" unless rake_args.empty?
+    run cmd
+    set :rakefile, nil if exists?(:rakefile)
+end
 end
