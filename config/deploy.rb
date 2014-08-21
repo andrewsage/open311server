@@ -1,6 +1,8 @@
 require 'rvm/capistrano'
 require 'bundler/capistrano'
 
+branch =  ENV["branch"] || 'master'
+
 #general info
 set :user, 'open311'
 set :application, "open311"
@@ -68,6 +70,10 @@ namespace :deploy do
 
   task :migrate, roles: :app do
     run_remote_rake "db:migrate"
+  end
+
+  task :list_tasks, roles: :app do
+    run_remote_rake "-T"
   end
 
   def run_remote_rake(rake_cmd)
