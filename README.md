@@ -11,7 +11,7 @@ Status
 
 This project is very much in a state of early development so do not expect everything to function or be implemented yet.
 
-There is a demo version of the server running at [http://open311server.herokuapp.com](http://open311server.herokuapp.com)
+There is a demo version of the server running at [http://open311.xoverto.com](http://open311.xoverto.com)
 
 
 Open311
