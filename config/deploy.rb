@@ -10,6 +10,7 @@ set :domain, 'open311.xoverto.com'
 set :applicationdir, "/home/#{user}/#{application}"
 set :scm, 'git'
 set :repository,  "git@github.com:andrewsage/open311server.git"
+set :branch, branch
 set :git_shallow_clone, 1
 set :scm_verbose, true
 set :deploy_via, :remote_cache
