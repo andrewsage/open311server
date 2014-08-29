@@ -114,6 +114,7 @@ class Open311App < Sinatra::Base
       car_park = CarPark.find_by_id_public(id_code)
       if car_park
         car_park.occupancy = occupancy
+        car_park.occupancy_percentage = occupancy_percentage
         car_park.save
       end
     end

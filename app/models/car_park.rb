@@ -11,6 +11,7 @@ class CarPark < ActiveRecord::Base
       :long => self.long,
       :features => {
         :occupancy => self.occupancy,
+        :occupancy_percentage => self.occupancy_percentage,
         :capacity => self.capacity
       }
     }
@@ -28,6 +29,7 @@ class CarPark < ActiveRecord::Base
       :long => self.long,
       :features => {
         :occupancy => self.occupancy,
+        :occupancy_percentage => self.occupancy_percentage,
         :capacity => self.capacity
       },
       :address => "",
@@ -53,6 +55,7 @@ class CarPark < ActiveRecord::Base
       xml.send(:'long', self.long)
       xml.send(:'features') {
         xml.send(:'occupancy', self.occupancy)
+        xml.send(:'occupancy', self.occupancy_percentage)
         xml.send(:'capacity', self.capacity)
       }
     }
@@ -70,6 +73,7 @@ class CarPark < ActiveRecord::Base
       xml.send(:'long', self.long)
       xml.send(:'features') {
         xml.send(:'occupancy', self.occupancy)
+        xml.send(:'occupancy', self.occupancy_percentage)
         xml.send(:'capacity', self.capacity)
       }
       xml.send(:'address', "")
