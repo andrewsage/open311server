@@ -71,6 +71,8 @@ class Open311App < Sinatra::Base
 
   def load_car_parks
 
+    CarPark.delete_all
+
     # 0 - id
     # 1 - name
     # 2 - lat
@@ -80,8 +82,7 @@ class Open311App < Sinatra::Base
     # 6 - address
     # 7 - operated by
     raw_data = [
-      ["CP01", "Harriet Street", 57.148624,-2.1006504,
-        ""],
+      ["CP01", "Harriet Street", 57.148624,-2.1006504, ""],
       ["CP02", "Loch Street", 57.149373,-2.1001346, ""],
       ["CP03", "The Mall Trinity", 57.1458388,-2.1007275, ""],
       ["CP04", "Shiprow", 57.1468981,-2.093786, ""],
@@ -89,7 +90,7 @@ class Open311App < Sinatra::Base
       ["CP06", "West North Street", 57.1499781,-2.0930345, ""],
       ["CP07", "Denburn", 57.148618,-2.1065774, ""],
       ["CP08", "Chapel Street", 57.1458485,-2.1112149, ""],
-      ["CP09", "South College Street", 57.1378417,-2.0981296], "",
+      ["CP09", "South College Street", 57.1378417,-2.0981296, ""],
       ["CP10", "Union Square", 57.1438026,-2.0953213,
       "0-2 hrs &pound;2.50<br>2-3 hrs &pound;3.50<br>3-4 hrs &pound;4.50<br>4-5 hrs &pound;5.50<br>5-6 hrs &pound;6.50<br>6-7 hrs &pound;10.00<br>7 hrs+ &pound;15.00<br>6pm - 4am &pound;1.00 **<p>**Customers can park for only &pound;1 after 6pm. This rate is applicable to vehicles entering the car park after 6pm and leaving before 4am.</p><p>If you enter the car park before 6pm you will qualify for the &pound;1 tariff, however, will be charged the normal rate for hours prior to 6pm.</p><p>A new daily rate is chargeable from 4am each day.</p><p>Additional part days are chargeable each day as per the rates above.  The maximum charge for any 24 hour period is &pound;15.</p><p>Lost tickets will be chargeable at the full daily rate of &pound;15.</p>"
       ]
