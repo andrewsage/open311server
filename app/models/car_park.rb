@@ -32,13 +32,16 @@ class CarPark < ActiveRecord::Base
         :occupancy_percentage => self.occupancy_percentage,
         :capacity => self.capacity
       },
-      :address => "",
+      :address => self.address,
       :postcode => "",
       :phone => "",
       :email => "",
       :web => "",
       :displayed_hours => "",
-      :eligibility_information => ""
+      :eligibility_information => "",
+      :tariff => self.tariff,
+      :accessibility => self.accessibility,
+      :operated_by => self.operated_by
     }
     json
   end
@@ -76,13 +79,16 @@ class CarPark < ActiveRecord::Base
         xml.send(:'occupancy', self.occupancy_percentage)
         xml.send(:'capacity', self.capacity)
       }
-      xml.send(:'address', "")
+      xml.send(:'address', self.address)
       xml.send(:'postcode', "")
       xml.send(:'phone', "")
       xml.send(:'email', "")
       xml.send(:'web', "")
       xml.send(:'displayed_hours', "")
       xml.send(:'eligibility_information', "")
+      xml.send(:'tariff', self.tariff)
+      xml.send(:'accessibility', self.accessibility)
+      xml.send(:'operated_by', self.operated_by)
     }
   end
 end

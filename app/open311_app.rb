@@ -71,18 +71,44 @@ class Open311App < Sinatra::Base
 
   def load_car_parks
 
+    # 0 - id
+    # 1 - name
+    # 2 - lat
+    # 3 - long
+    # 4 - tariff
+    # 5 - accessibility
+    # 6 - address
+    # 7 - operated by
     raw_data = [
-      ["CP01", "Harriet Street Car Park", 57.148624,-2.1006504],
-      ["CP02", "Loch Street Car Park", 57.149373,-2.1001346],
-      ["CP03", "The Mall Trinity Car Park", 57.1458388,-2.1007275],
-      ["CP04", "Shiprow", 57.1468981,-2.093786],
-      ["CP05", "Gallowgate Car Park", 57.1512768,-2.0986005],
-      ["CP06", "West North Street Car Park", 57.1499781,-2.0930345],
-      ["CP07", "Denburn Car Park", 57.148618,-2.1065774],
-      ["CP08", "Chapel Street Car Park", 57.1458485,-2.1112149],
-      ["CP09", "South College Street Car Park", 57.1378417,-2.0981296],
-      ["CP10", "Union Square Car Park", 57.1438026,-2.0953213]
+      ["CP01", "Harriet Street", 57.148624,-2.1006504,
+        ""],
+      ["CP02", "Loch Street", 57.149373,-2.1001346, ""],
+      ["CP03", "The Mall Trinity", 57.1458388,-2.1007275, ""],
+      ["CP04", "Shiprow", 57.1468981,-2.093786, ""],
+      ["CP05", "Gallowgate", 57.1512768,-2.0986005, ""],
+      ["CP06", "West North Street", 57.1499781,-2.0930345, ""],
+      ["CP07", "Denburn", 57.148618,-2.1065774, ""],
+      ["CP08", "Chapel Street", 57.1458485,-2.1112149, ""],
+      ["CP09", "South College Street", 57.1378417,-2.0981296], "",
+      ["CP10", "Union Square", 57.1438026,-2.0953213,
+      "0-2 hrs &pound;2.50<br>2-3 hrs &pound;3.50<br>3-4 hrs &pound;4.50<br>4-5 hrs &pound;5.50<br>5-6 hrs &pound;6.50<br>6-7 hrs &pound;10.00
+<br>7 hrs+ &pound;15.00<br>
+6pm - 4am £1.00 **
+
+<p>
+**Customers can park for only &pound;1 after 6pm.
+This rate is applicable to vehicles entering the car park after 6pm and leaving before 4am.
+</p>
+
+<p>If you enter the car park before 6pm you will qualify for the &pound;1 tariff, however, will be charged the normal rate for hours prior to 6pm.</p>
+
+<p>A new daily rate is chargeable from 4am each day.</p>
+
+<p>Additional part days are chargeable each day as per the rates above.  The maximum charge for any 24 hour period is &pound;15.</p>
+
+<p>Lost tickets will be chargeable at the full daily rate of &pound;15.</p>"
       ]
+    ]
 
 
     raw_data.each do |row|
@@ -91,14 +117,17 @@ class Open311App < Sinatra::Base
       car_park_data['name'] = row[1]
       car_park_data['lat'] = row[2]
       car_park_data['long'] = row[3]
+      car_park_data['tariff'] = row[4]
 
       car_park = CarPark.find_by_id_public(car_park_data['Id'])
       if car_park.nil?
         car_park = CarPark.create(:id_public => car_park_data['Id'],
-          :name => car_park_data['name'],
           :lat => car_park_data['lat'],
           :long => car_park_data['long'])
       end
+      car_park.tariff = car_park_data['tariff']
+      car_park.name = car_park_data['name']
+      car_park.save
     end
 
     # load and add the live parking data
