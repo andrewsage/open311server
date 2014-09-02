@@ -91,22 +91,7 @@ class Open311App < Sinatra::Base
       ["CP08", "Chapel Street", 57.1458485,-2.1112149, ""],
       ["CP09", "South College Street", 57.1378417,-2.0981296], "",
       ["CP10", "Union Square", 57.1438026,-2.0953213,
-      "0-2 hrs &pound;2.50<br>2-3 hrs &pound;3.50<br>3-4 hrs &pound;4.50<br>4-5 hrs &pound;5.50<br>5-6 hrs &pound;6.50<br>6-7 hrs &pound;10.00
-<br>7 hrs+ &pound;15.00<br>
-6pm - 4am £1.00 **
-
-<p>
-**Customers can park for only &pound;1 after 6pm.
-This rate is applicable to vehicles entering the car park after 6pm and leaving before 4am.
-</p>
-
-<p>If you enter the car park before 6pm you will qualify for the &pound;1 tariff, however, will be charged the normal rate for hours prior to 6pm.</p>
-
-<p>A new daily rate is chargeable from 4am each day.</p>
-
-<p>Additional part days are chargeable each day as per the rates above.  The maximum charge for any 24 hour period is &pound;15.</p>
-
-<p>Lost tickets will be chargeable at the full daily rate of &pound;15.</p>"
+      "0-2 hrs &pound;2.50<br>2-3 hrs &pound;3.50<br>3-4 hrs &pound;4.50<br>4-5 hrs &pound;5.50<br>5-6 hrs &pound;6.50<br>6-7 hrs &pound;10.00<br>7 hrs+ &pound;15.00<br>6pm - 4am £1.00 **<p>**Customers can park for only &pound;1 after 6pm. This rate is applicable to vehicles entering the car park after 6pm and leaving before 4am.</p><p>If you enter the car park before 6pm you will qualify for the &pound;1 tariff, however, will be charged the normal rate for hours prior to 6pm.</p><p>A new daily rate is chargeable from 4am each day.</p><p>Additional part days are chargeable each day as per the rates above.  The maximum charge for any 24 hour period is &pound;15.</p><p>Lost tickets will be chargeable at the full daily rate of &pound;15.</p>"
       ]
     ]
 
