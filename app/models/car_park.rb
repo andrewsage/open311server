@@ -12,7 +12,8 @@ class CarPark < ActiveRecord::Base
       :features => {
         :occupancy => self.occupancy,
         :occupancy_percentage => self.occupancy_percentage,
-        :capacity => self.capacity
+        :capacity => self.capacity,
+        :tariff => self.tariff
       }
     }
     json
@@ -30,7 +31,8 @@ class CarPark < ActiveRecord::Base
       :features => {
         :occupancy => self.occupancy,
         :occupancy_percentage => self.occupancy_percentage,
-        :capacity => self.capacity
+        :capacity => self.capacity,
+        :tariff => self.tariff
       },
       :address => self.address,
       :postcode => "",
@@ -39,7 +41,6 @@ class CarPark < ActiveRecord::Base
       :web => "",
       :displayed_hours => "",
       :eligibility_information => "",
-      :tariff => self.tariff,
       :accessibility => self.accessibility,
       :operated_by => self.operated_by
     }
